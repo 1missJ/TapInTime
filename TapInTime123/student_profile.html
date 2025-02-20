@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+            <ul>
+
+                <li class="brand-logo">
+                    <a href="index.html">
+                        <div class="logo-container">
+                            <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
+                        </div>
+                        <span class="title">TapInTime</span>
+                    </a>
+                </li>                    
+                
+                <li>
+                    <a href="index.html">
+                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                        <span class="title">Dashboard</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="student_verification.html">
+                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
+                        <span class="title">Student Verification</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="student_details.html">
+                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
+                        <span class="title">Student Details</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="id_generation.html">
+                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
+                        <span class="title">ID Generation</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
+                        <span class="title">RFID Assignment</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
+                        <span class="title">Faculty Registration</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
+                        <span class="title">Subject Management</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
+                        <span class="title">Attendance Monitoring</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
+                        <span class="title">Students Promotion</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                        <span class="title">Users</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
+                        <span class="title">Sign out</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2>Student Profile</h2>
+            <div class="info-grid">
+                <label>Learner’s Reference No.:</label>
+                    <input type="text" value="103146090014">
+                <label>Name:</label>
+                    <input type="text" value="Catagatan Elmarie">
+                <label>Sex:</label>
+                    <input type="text" value="Female">
+                <label>Civil Status:</label>
+                    <input type="text" value="Single">
+                <label>Contact No.:</label>
+                    <input type="text" value="09659837951">
+                <label>Email Address:</label>
+                    <input type="text" value="catagatanelmarie@gmail.com">
+                <label>Birthday:</label>
+                    <input type="text" value="2004-04-27">
+                <label>Age:</label>
+                    <input type="text" value="17">
+                <label>Religion:</label>
+                    <input type="text" value="Roman Catholic">
+                <label>Nationality:</label>
+                    <input type="text" value="Filipino">
+                <label>Citizenship:</label>
+                    <input type="text" value="Filipino">
+                <label>Exam Result:</label>
+                    <input type="text" value="42">
+            </div>
+
+            <h2>Additional Information</h2>
+            <div class="info-grid">
+                <label>Birth Place:</label>
+                    <input type="text" value="Purok 4, San Antonio Cabagan Isabela">
+                <label>Elementary School:</label>
+                    <input type="text">
+                <label>Guardian Name:</label>
+                    <input type="text" value="Noel Catagatan">
+                <label>Father Name:</label>
+                    <input type="text" value="Noel Dacquil Catagatan">
+                <label>Mother Name:</label>
+                    <input type="text" value="Shalimar Macapia Catagatan">
+            </div>
+
+            
+            <div class="button-container">
+                <button class="save-btn">Save</button>
+                <div class="close-btn" id="actionButtonContainer">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Retrieve a query parameter value by name
+        function getQueryParam(param) {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(param);
+        }
+    
+        // Render action button based on mode and origin parameters
+        function renderActionButton() {
+          const mode = getQueryParam('mode');     // mode=edit for Save; mode=view for Close
+          const origin = getQueryParam('origin'); // origin=verification or origin=details
+          const container = document.getElementById('actionButtonContainer');
+          if (mode === 'edit') {
+            container.innerHTML = '<button class="save-btn">Save</button>';
+          } else {
+            // Render Close button and attach click event for redirection
+            container.innerHTML = '<button class="close-btn" id="closeBtn">Close</button>';
+            document.getElementById("closeBtn").addEventListener('click', function() {
+              if (origin === 'verification') {
+                window.location.href = 'student_verification.html';
+              } else if (origin === 'details') {
+                window.location.href = 'student_details.html';
+              } else {
+                window.history.back();
+              }
+            });
+          }
+        }
+    
+        window.onload = renderActionButton;
+      </script>
+
+        <script src="assets/js/main.js"></script>      
+
+        <!--ionicons-->
+        <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+        <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>
