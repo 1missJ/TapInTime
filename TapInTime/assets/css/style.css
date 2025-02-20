@@ -1,0 +1,315 @@
+/*=======Google Fonts========*/
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+* {
+    font-family: 'Ubuntu', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --blue: #2a2185;
+    --white: #fff;
+    --gray: #f5f5f5;
+    --black1: #222;
+    --black2: #999;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+}
+
+/*---------Navigation----*/
+.navigation {
+    position: fixed;
+    width: 300px;
+    height: 100%;
+    background: var(--blue);
+    border-left: 10px solid var(--blue);
+    transition: 0.5s;
+    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.navigation::-webkit-scrollbar {
+    display: none;
+}
+
+.navigation ul {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.navigation ul li {
+    position: relative;
+    width: 100%;
+    list-style: none;
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+}
+
+.navigation ul li:hover {
+    background-color: var(--white);
+}
+
+.navigation ul li:nth-child(1) {
+    margin-bottom: 40px;
+    pointer-events: none;
+    text-align: center;
+}
+
+.navigation ul li:nth-child(1) .icon img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.navigation ul li a {
+    display: flex;
+    align-items: center; /* Ensures vertical alignment */
+    text-decoration: none;
+    color: var(--white);
+    height: 60px;
+    
+}
+
+.navigation ul li:hover a {
+    color: var(--blue);
+}
+
+.navigation ul li a .icon {
+    min-width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centers the icon */
+}
+
+.navigation ul li a .icon img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.navigation ul li a .icon ion-icon {
+    font-size: 1.75rem;
+}
+
+.navigation ul li a .title {
+    display: flex;
+    align-items: center; /* Aligns text with icon */
+    padding-left: 10px; /* Adjust for spacing */
+    white-space: nowrap;
+}
+
+/*------curve outside---*/
+.navigation ul li:hover a::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: -50px;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
+    border-radius: 50%;
+    box-shadow: 35px 35px 0 10px var(--white);
+    pointer-events: none;
+}
+
+.navigation ul li:hover a::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -50px;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
+    border-radius: 50%;
+    box-shadow: 35px -35px 0 10px var(--white);
+    pointer-events: none;
+}
+
+.logo-container img {
+    width: 70px; /* Adjust this value as needed */
+    height: 70px; /* Keep it equal to width for a perfect circle */
+    border-radius: 50%;
+    object-fit: cover; /* Ensures the image doesn't get distorted */
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    justify-content: start; 
+    padding-left: 10px; /* Adjust as needed */
+    padding-top: 30px;
+}
+
+.brand-logo .title {
+    font-size: 1.5rem; /* Make the title slightly bigger for emphasis */
+    font-weight: 600; /* Make it bold for better visibility */
+    font-family: 'Poppins', sans-serif; /* Modern and clean font */
+    color: var(--white);
+    margin-left: 10px; /* Space between logo and text */
+    white-space: nowrap;
+}
+
+/*Student Verification design*/
+/* Main Content Styling */
+.main-content {
+    margin-left: 300px; /* Gawing same width ng sidebar */
+    padding: 20px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    overflow-x: hidden; /* Para hindi lumagpas */
+    width: calc(100% - 300px); /* Para sakto lang sa natitirang space */
+}
+
+
+/* Page Title */
+.main-content h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Search Bar */
+.search-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.search-container input {
+    width: 250px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.search-container button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.search-container button:hover {
+    background-color: #0056b3;
+}
+
+/* Table Styling */
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.student-table th, .student-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.student-table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.student-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Buttons */
+.approve-btn, .reject-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.approve-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.approve-btn:hover {
+    background-color: #218838;
+}
+
+.reject-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reject-btn:hover {
+    background-color: #c82333;
+}
+
+/*Student details modal in verification */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 1;
+    top: 0;
+    width: 150%;
+    height: 150%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+
+.close {
+    color: red;
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    color: #007bff;
+    vertical-align: middle; /* Para pantay sa mga button */
+}
+
+
+.view-btn:hover {
+    color: #0056b3;
+}
+
+
+
+
+
+

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> Student Details </title>
+
+        <!--Styles-->
+        <link rel="stylesheet" href="assets/css/style.css">
+    </head>
+
+    <body>
+        <!--Navigation-->
+        <div class="container">
+            <div class="navigation">
+                <ul>
+
+                    <li class="brand-logo">
+                        <a href="#">
+                            <div class="logo-container">
+                                <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
+                            </div>
+                            <span class="title">TapInTime</span>
+                        </a>
+                    </li>                    
+                    
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                            <span class="title">Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="student_verification.html">
+                            <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
+                            <span class="title">Student Verification</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
+                            <span class="title">Student Details</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
+                            <span class="title">ID Generation</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
+                            <span class="title">RFID Assignment</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
+                            <span class="title">Faculty Registration</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
+                            <span class="title">Subject Management</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
+                            <span class="title">Attendance Monitoring</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
+                            <span class="title">Students Promotion</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                            <span class="title">Users</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
+                            <span class="title">Sign out</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h2>Student Details</h2>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search student...">
+                <button onclick="searchStudent()">Search</button>
+            </div>
+            
+            <div class="year-levels">
+                <h3>Select Year Level</h3>
+                <ul id="yearLevelList">
+                    <li onclick="showSections('Grade 7')">Grade 7</li>
+                    <li onclick="showSections('Grade 8')">Grade 8</li>
+                    <li onclick="showSections('Grade 9')">Grade 9</li>
+                    <li onclick="showSections('Grade 10')">Grade 10</li>
+                </ul>
+            </div>
+            
+            <div class="sections" id="sectionsContainer" style="display:none;">
+                <h3>Select Section</h3>
+                <ul id="sectionList"></ul>
+            </div>
+            
+            <table class="student-table" id="studentTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Year Level</th>
+                        <th>Section</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2025-001</td>
+                        <td>Juan Dela Cruz</td>
+                        <td>juancruz@email.com</td>
+                        <td>Grade 7</td>
+                        <td>Section A</td>
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="archive-btn">Archive</button>
+                            <button class="view-btn" onclick="openModal()">View</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="modal" id="studentModal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3>Student Details</h3>
+                <p><strong>Name:</strong> Juan Dela Cruz</p>
+                <p><strong>Email:</strong> juancruz@email.com</p>
+                <p><strong>Year Level:</strong> Grade 7</p>
+                <p><strong>Section:</strong> A</p>
+            </div>
+        </div>
+        
+        <script>
+            function showSections(yearLevel) {
+                const sections = { 'Grade 7': ['A', 'B', 'C'], 'Grade 8': ['A', 'B'], 'Grade 9': ['A', 'B'], 'Grade 10': ['A', 'B'] };
+                let sectionList = document.getElementById("sectionList");
+                sectionList.innerHTML = "";
+                sections[yearLevel].forEach(sec => {
+                    let li = document.createElement("li");
+                    li.textContent = `Section ${sec}`;
+                    li.onclick = () => document.getElementById("studentTable").style.display = "table";
+                    sectionList.appendChild(li);
+                });
+                document.getElementById("sectionsContainer").style.display = "block";
+            }
+            function openModal() { document.getElementById("studentModal").style.display = "block"; }
+            function closeModal() { document.getElementById("studentModal").style.display = "none"; }
+        </script>
+        
+        
+        <!--Scripts-->
+        <script src="assets/js/main.js"></script>      
+
+        <!--ionicons-->
+        <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+        <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    </body>
+</html>
