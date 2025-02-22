@@ -1,3 +1,21 @@
+<?php
+// Include database connection
+include('db_connection.php');
+
+// Fetch specific columns for students (without any grade-level restriction in the query)
+$query = "SELECT lrn, CONCAT(first_name, ' ', middle_name, ' ', last_name) AS fullname, email, section 
+          FROM students"; // Query fetches all students' data
+$result = mysqli_query($conn, $query);
+
+// Initialize the students array
+$students = [];
+
+// Check if any students were fetched
+if (mysqli_num_rows($result) > 0) {
+    // Fetch the results into the array
+    $students = mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,8 +120,7 @@
             </ul>
         </div>
     </div>
-
-
+    
     <!-- Main Content -->
     <div class="main-content">
         <h2>Student Details</h2>
@@ -114,134 +131,82 @@
             <button onclick="searchStudent()">Search</button>
         </div>
 
-    <!-- Year Level List -->
-    <div class="year-levels">
-        <h3>Select Year Level</h3>
+        <!-- Year Level List -->
+        <div class="year-levels">
+            <h3>Select Year Level</h3>
             <div class="year-box" onclick="showStudents('Grade 7')">Grade 7</div>
             <div class="year-box" onclick="showStudents('Grade 8')">Grade 8</div>
             <div class="year-box" onclick="showStudents('Grade 9')">Grade 9</div>
             <div class="year-box" onclick="showStudents('Grade 10')">Grade 10</div>
-    </div>
+        </div>
 
         <!-- Student Table -->
         <table class="student-table" id="studentTable" style="display:none;">
             <thead>
                 <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
+                    <th>LRN</th>
+                    <th>Full Name</th>
                     <th>Email</th>
-                    <th>Year Level</th>
                     <th>Section</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="studentTableBody"></tbody>
+            <tbody id="studentTableBody">
+                <?php
+                // Check if there are students fetched
+                foreach ($students as $student) {
+                    echo "<tr>
+                    <td>{$student['lrn']}</td>
+                    <td>{$student['fullname']}</td>
+                    <td>{$student['email']}</td>
+                    <td>{$student['section']}</td>
+                    <td>
+                        <button class='edit-btn' onclick='redirectToStudentInfo(\"{$student['lrn']}\")'>Edit</button>
+                        <button class='archive-btn'>Archive</button>
+                        <button class='view-btn' onclick='redirectToStudentInfo(\"{$student['lrn']}\")'>
+                            <ion-icon name='eye-outline'></ion-icon>
+                        </button>
+                    </td>
+                  </tr>";
+                }
+                ?>
+            </tbody>
         </table>
-    </div>
-
-    <!-- MODAL (same style as in student_verification.html) -->
-    <div id="studentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3>Student Details</h3>
-            <p><strong>Student ID:</strong> <span id="modalStudentID"></span></p>
-            <p><strong>Name:</strong> <span id="modalStudentName"></span></p>
-            <p><strong>Email:</strong> <span id="modalStudentEmail"></span></p>
-            <p><strong>Registered Date:</strong> <span id="modalStudentDate"></span></p>
-        </div>
     </div>
 
     <!-- JavaScript -->
     <script>
-    // Show students for a selected year level
-    function showStudents(yearLevel) {
-        document.querySelector(".year-levels").style.display = "none";
-        document.getElementById("studentTable").style.display = "table";
+        function searchStudent() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("studentTableBody");
+            tr = table.getElementsByTagName("tr");
 
-        // Sample data
-        let students = {
-            "Grade 7": [
-                { id: "2025-001", name: "Juan Dela Cruz", email: "juancruz@email.com", section: "A" },
-                { id: "2025-002", name: "Maria Santos", email: "mariasantos@email.com", section: "B" }
-            ],
-            "Grade 8": [
-                { id: "2026-001", name: "Pedro Reyes", email: "pedroreyes@email.com", section: "A" },
-                { id: "2026-002", name: "Ana Dela Rosa", email: "anadelarosa@email.com", section: "B" }
-            ],
-            "Grade 9": [],
-            "Grade 10": []
-        };
-
-        let tableBody = document.querySelector("#studentTableBody");
-        tableBody.innerHTML = "";
-
-        // Populate rows
-        students[yearLevel].forEach(student => {
-            // For demonstration, there's no actual "Registered Date" in the sample object
-            // We'll just pass a placeholder date to openModal().
-            let placeholderDate = "Feb 20, 2025";
-
-            let row = `
-                <tr>
-                    <td>${student.id}</td>
-                    <td>${student.name}</td>
-                    <td>${student.email}</td>
-                    <td>${yearLevel}</td>
-                    <td>${student.section}</td>
-                    <td>
-                        <button class="edit-btn" onclick="redirectToStudentInfo('${student.id}')">Edit</button>
-                        <button class="archive-btn">Archive</button>
-                        <!-- View button with eye icon -->
-                    <button class="view-btn"  onclick="redirectToStudentInfo('${student.id}')">
-                        <ion-icon name="eye-outline"></ion-icon>
-                        </button>
-                    </td>
-                </tr>`;
-            tableBody.innerHTML += row;
-        });
-    }
-
-    // Redirect to another page for editing
-    function redirectToStudentInfo(studentId) {
-        window.location.href = `student_profile.html?id=${studentId}`;
-    }
-
-    // Open the modal, fill in details
-    function openModal(studentId, studentName, studentEmail, studentDate) {
-        document.getElementById("modalStudentID").textContent = studentId;
-        document.getElementById("modalStudentName").textContent = studentName;
-        document.getElementById("modalStudentEmail").textContent = studentEmail;
-        document.getElementById("modalStudentDate").textContent = studentDate;
-
-        document.getElementById("studentModal").style.display = "block";
-    }
-
-    // Close the modal
-    function closeModal() {
-        document.getElementById("studentModal").style.display = "none";
-    }
-
-    // Search functionality
-    function searchStudent() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("studentTableBody");
-        tr = table.getElementsByTagName("tr");
-
-        for (i = 0; i < tr.length; i++) {
-            // Search by student name (column index 1)
-            td = tr[i].getElementsByTagName("td")[1];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                }
             }
         }
-    }
-    </script>
 
-    <!-- Main JS -->
-    <script src="assets/js/main.js"></script>      
+        // Show students for a selected year level
+        function showStudents(yearLevel) {
+            if (yearLevel === 'Grade 7') {
+                document.querySelector(".year-levels").style.display = "none";
+                document.getElementById("studentTable").style.display = "table"; // Only show Grade 7
+            } else {
+                // Hide data for other grades
+                alert('No data for ' + yearLevel);
+            }
+        }
+
+        function redirectToStudentInfo(studentLrn) {
+            window.location.href = `student_profile.php?lrn=${studentLrn}`;
+        }
+    </script>
 
     <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>

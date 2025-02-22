@@ -33,14 +33,14 @@
                     </li>
 
                     <li>
-                        <a href="student_verification.html">
+                        <a href="student_verification.php">
                             <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
                             <span class="title">Student Verification</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="student_details.html">
+                        <a href="student_details.php">
                             <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
                             <span class="title">Student Details</span>
                         </a>

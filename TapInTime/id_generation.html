@@ -22,21 +22,21 @@
                 </li>                    
                 
                 <li>
-                    <a href="index.html">
+                    <a href="dashboard.php">
                         <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
                         <span class="title">Dashboard</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="student_verification.html">
+                    <a href="student_verification.php">
                         <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
                         <span class="title">Student Verification</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="student_details.html">
+                    <a href="student_details.php">
                         <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
                         <span class="title">Student Details</span>
                     </a>
@@ -103,8 +103,8 @@
     </div>
 
     <!-- Main Content -->
-<div class="main-content">
-    <h2>Student Verification</h2>
+    <div class="main-content">
+    <h2>ID Genaration</h2>
 
     <!-- Search Bar -->
     <div class="search-container">
@@ -129,11 +129,7 @@
                 <td>juancruz@email.com</td>
                 <td>Feb 20, 2025</td>
                 <td>
-                    <button class="approve-btn">Approve</button>
-                    <button class="reject-btn">Reject</button>
-                    <button class="view-btn"  onclick="redirectToStudentInfo('${student.id}')">
-                    <ion-icon name="eye-outline"></ion-icon>
-                    </button>
+                    <button class="generate-btn">Generate</button>
                 </td>
             </tr>
             <tr>
@@ -142,11 +138,7 @@
                 <td>maria@email.com</td>
                 <td>Feb 19, 2025</td>
                 <td>
-                    <button class="approve-btn">Approve</button>
-                    <button class="reject-btn">Reject</button>
-                    <button class="view-btn" onclick="openModal('2025-002', 'Maria Santos', 'maria@email.com', 'Feb 19, 2025')">
-                        <ion-icon name="eye-outline"></ion-icon>
-                    </button>
+                    <button class="generate-btn">Generate</button>
                 </td>
             </tr>
         </tbody>
@@ -181,10 +173,6 @@ function searchStudent() {
             tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
         }
     }
-}
-
-function redirectToStudentInfo(studentId) {
-    window.location.href = `student_profile.html?id=${studentId}`;
 }
 </script>
 

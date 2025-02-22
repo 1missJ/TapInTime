@@ -175,7 +175,6 @@ body {
     width: calc(100% - 300px); /* Para sakto lang sa natitirang space */
 }
 
-
 /* Page Title */
 .main-content h2 {
     font-size: 24px;
@@ -223,6 +222,23 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.student-table td {
+    text-align: center; /* Center-align text in table */
+    vertical-align: middle; /* Ensure vertical alignment */
+    padding: 10px; /* Adjust padding for spacing */
+}
+
+.student-table td button {
+    display: inline-flex; /* Keep buttons in a row */
+    padding: 8px 12px;
+    margin: 2px; /* Space between buttons */
+    border: none;
+    border-radius: 5px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
 .student-table th, .student-table td {
     padding: 12px;
     text-align: left;
@@ -238,15 +254,28 @@ body {
     background-color: #f1f1f1;
 }
 
-/* Buttons */
-.approve-btn, .reject-btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
+/* Wrap all buttons in a flex container */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px; /* Space between buttons */
+    margin-left: -100px; /* Moves the buttons slightly to the left */
 }
 
+.action-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 6px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Approve Button */
 .approve-btn {
     background-color: #28a745;
     color: white;
@@ -256,6 +285,7 @@ body {
     background-color: #218838;
 }
 
+/* Reject Button */
 .reject-btn {
     background-color: #dc3545;
     color: white;
@@ -263,6 +293,25 @@ body {
 
 .reject-btn:hover {
     background-color: #c82333;
+}
+
+/* View Button */
+.view-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.view-btn:hover {
+    background-color: #0056b3;
+}
+
+.view-btn ion-icon {
+    font-size: 16px;
 }
 
 /*Student details modal in verification */
@@ -295,21 +344,250 @@ body {
 }
 
 .view-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 24px;
-    color: #007bff;
-    vertical-align: middle; /* Para pantay sa mga button */
+    background-color: #007bff;
+    color: white;
+    padding: 8px 12px;
+    display: inline-flex; /* Ensures proper alignment with other buttons */
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
+.view-btn:hover {
+    background-color: #0056b3;
+}
+
+.view-btn ion-icon {
+    font-size: 16px;
+}
+ /* Student Profile */
+ .rectangle-img {
+    width: 150px; /* Adjust width */
+    height: 200px; /* Adjust height for a rectangle */
+    object-fit: cover;
+    border-radius: 5px; /* Optional: Slightly rounded corners */
+    border: 2px solid #ddd; /* Optional: Border styling */
+}
+
+ .profile-pic {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.profile-pic img {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Form Sections */
+.form-section h4 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+/* Form Fields */
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.form-group input[type="file"] {
+    width: auto;
+    padding: 5px;
+}
+
+/* Three-column layout for form fields */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.col-md-4 {
+    flex: 1;
+    min-width: 250px; /* Adjust the min-width as needed */
+}
+
+/* Button Styles */
+.form-buttons {
+display: flex;
+justify-content: flex-end;  /* Align buttons to the right */
+gap: 20px;  /* Space between buttons */
+margin-top: 30px; /* Add some spacing from other elements */
+}
+
+.save-btn, .close-btn {
+padding: 12px 25px;
+font-size: 16px;
+border-radius: 6px;
+cursor: pointer;
+border: none;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.save-btn {
+background-color: #4CAF50; /* Green for Save */
+color: white;
+}
+
+.save-btn:hover {
+background-color: #45a049;
+transform: scale(1.05);
+}
+
+.close-btn {
+background-color: #f44336; /* Red for Close */
+color: white;
+}
+
+.close-btn:hover {
+background-color: #e53935;
+transform: scale(1.05);
+}
+
+/* Student details button */
+.edit-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #ffc107;
+    color: black;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: #e0a800;
+}
+
+.archive-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #dc3545;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.archive-btn:hover {
+    background-color: #c82333;
+}
+
+.view-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #3535dc;
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+}
 
 .view-btn:hover {
     color: #0056b3;
 }
 
 
+/* ID Generation Button */
+.generate-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #17a2b8; /* Info color similar to Bootstrap's info button */
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
 
+.generate-btn:hover {
+    background-color: #138496;
+}
 
+/* Styling for Year Level Selection */
+.year-levels {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
 
+.year-levels h3 {
+    width: 100%;
+}
 
+.year-levels .year-box {
+    background: #3498DB;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    flex: 1;
+    min-width: 120px;
+}
+
+.year-levels .year-box:hover {
+    background: #2980B9;
+}
+/* Photo Uploaded */
+.rectangle-container {
+    width: 250px; /* Adjust width */
+    height: 150px; /* Adjust height */
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f9f9f9;
+}
+
+.rectangle-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures it fits properly */
+    border-radius: 0; /* Removes any circular effect */
+}
+
+.document-container {
+    width: 100%;
+    max-width: 250px; /* Adjust width as needed */
+    height: 150px; /* Maintain rectangle shape */
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f9f9f9;
+}
+
+.rectangle-document {
+    width: 100%;
+    max-width: 250px; /* Adjust this size to fit the design */
+    height: 150px; /* Adjust the height for the rectangle */
+    object-fit: cover; /* Ensures the image scales correctly */
+    border-radius: 8px; /* Optional: Adds rounded corners */
+}
