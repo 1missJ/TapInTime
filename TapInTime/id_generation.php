@@ -6,182 +6,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Verification - TapInTime</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/ids.css">
 </head>
 <body>
-    <div class="container">
-        <div class="navigation">
-            <ul>
-
-                <li class="brand-logo">
-                    <a href="index.html">
-                        <div class="logo-container">
-                            <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
-                        </div>
-                        <span class="title">TapInTime</span>
-                    </a>
-                </li>                    
-                
-                <li>
-                    <a href="dashboard.php">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">Dashboard</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_verification.php">
-                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
-                        <span class="title">Student Verification</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_details.php">
-                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
-                        <span class="title">Student Details</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="id_generation.php">
-                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
-                        <span class="title">ID Generation</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
-                        <span class="title">RFID Assignment</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
-                        <span class="title">Faculty Registration</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
-                        <span class="title">Subject Management</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
-                        <span class="title">Attendance Monitoring</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
-                        <span class="title">Students Promotion</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
-                        <span class="title">Users</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
-                        <span class="title">Sign out</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-    </div>
-
+    <!-- Include Sidebar -->
+    <?php include('sidebar.php'); ?>
+    
     <!-- Main Content -->
     <div class="main-content">
-    <h2>ID Genaration</h2>
+        <h2>ID Generation</h2>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search student...">
-        <button onclick="searchStudent()">Search</button>
-    </div>
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search student...">
+            <button onclick="searchStudent()">Search</button>
+        </div>
 
-    <table class="student-table">
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Registered Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="studentTableBody">
-            <tr>
-                <td>2025-001</td>
-                <td>Juan Dela Cruz</td>
-                <td>juancruz@email.com</td>
-                <td>Feb 20, 2025</td>
-                <td>
-                    <button class="generate-btn">Generate</button>
-                </td>
-            </tr>
-            <tr>
-                <td>2025-002</td>
-                <td>Maria Santos</td>
-                <td>maria@email.com</td>
-                <td>Feb 19, 2025</td>
-                <td>
-                    <button class="generate-btn">Generate</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+        <?php
+        // Include database connection
+        include 'db_connection.php';
 
-<div id="studentModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h3>Student Details</h3>
-        <p><strong>Student ID:</strong> <span id="modalStudentID"></span></p>
-        <p><strong>Name:</strong> <span id="modalStudentName"></span></p>
-        <p><strong>Email:</strong> <span id="modalStudentEmail"></span></p>
-        <p><strong>Registered Date:</strong> <span id="modalStudentDate"></span></p>
-    </div>
-</div>
+        // Fetch student data from the database
+        $sql = "SELECT lrn, first_name, middle_name, last_name, email, created_at FROM students";
+        $result = mysqli_query($conn, $sql);
 
-
-<!-- JavaScript for Search Functionality -->
-<script>
-function searchStudent() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.getElementById("studentTableBody");
-    tr = table.getElementsByTagName("tr");
-
-    for (i = 0; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td")[1]; // Search by student name
-        if (td) {
-            txtValue = td.textContent || td.innerText;
-            tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        if (!$result) {
+            die("Query failed: " . mysqli_error($conn));
         }
-    }
-}
-</script>
+        ?>
 
-        <!--Scripts-->
-        <script src="assets/js/main.js"></script>      
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>LRN</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                    <?php 
+                        // Combine first_name, middle_name, and last_name into "Name"
+                        $full_name = $row['first_name'] . ' ' . 
+                                    (!empty($row['middle_name']) ? $row['middle_name'] . ' ' : '') . 
+                                    $row['last_name']; 
+                    ?>
+                    <tr>
+                        <td><?php echo $row['lrn']; ?></td>
+                        <td><?php echo $full_name; ?></td>
+                        <td><?php echo $row['email']; ?></td>
+                        <td><?php echo $row['created_at']; ?></td>
+                        <td>
+                            <button class="generate-btn" data-lrn="<?php echo $row['lrn']; ?>">Generate</button>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
 
-        <!--ionicons-->
-        <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-        <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <div id="idModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-body">
+            <div class="close-container">
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <iframe id="idFrame" style="width:100%; height:500px; border:none;"></iframe>
+        </div>
+    </div>
+</div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const generateButtons = document.querySelectorAll(".generate-btn");
+    const modal = document.getElementById("idModal");
+    const idFrame = document.getElementById("idFrame");
+    const closeBtn = document.querySelector(".close");
+
+    generateButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            let studentLRN = button.getAttribute("data-lrn");
+            if (studentLRN) {
+                idFrame.src = "id_template.php?lrn=" + studentLRN;
+                modal.style.display = "flex"; // Ensure the modal is visible
+            } else {
+                alert("LRN not found. Please try again.");
+            }
+        });
+    });
+
+    // Close modal when clicking "X"
+    closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+    // Close modal when clicking outside of modal-content
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+
+        // Search Functionality
+        function searchStudent() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("studentTableBody");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1]; // Search by student name
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+    </script>
+
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>      
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
 </body>
 </html>

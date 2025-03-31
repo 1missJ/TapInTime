@@ -12,8 +12,9 @@ if (isset($_GET['lrn'])) {
 
 // Initialize variables
 $id_photo = "assets/imgs/default-profile.png"; // Default image
-$first_name = $middle_name = $last_name = $date_of_birth = $gender = "";
-$guardian_name = $guardian_contact = $guardian_relationship = "";
+$first_name = $middle_name = $last_name = $date_of_birth = $gender = ""; 
+$citizenship = $contact_number = $address = $email = "";
+$guardian_name = $guardian_contact = $guardian_address = $guardian_relationship = "";
 $elementary_school = $year_graduated = "";
 $birth_certificate = $good_moral = $student_signature = "";
 
@@ -25,16 +26,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $last_name = $_POST['last_name'];
     $date_of_birth = $_POST['date_of_birth'];
     $gender = $_POST['gender'];
+    $citizenship = $_POST['citizenship'];
+    $contact_number = $_POST['contact_number'];
+    $address = $_POST['address'];
+    $email = $_POST['email'];
     $guardian_name = $_POST['guardian_name'];
     $guardian_contact = $_POST['guardian_contact'];
+    $guardian_address = $_POST['guardian_address'];
     $guardian_relationship = $_POST['guardian_relationship'];
     $elementary_school = $_POST['elementary_school'];
     $year_graduated = $_POST['year_graduated'];
 
     // Update student profile in the database
-    $sql = "UPDATE students SET first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?, gender = ?, guardian_name = ?, guardian_contact = ?, guardian_relationship = ?, elementary_school = ?, year_graduated = ? WHERE lrn = ?";
+    $sql = "UPDATE students SET first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?, gender = ?, citizenship = ?, contact_number = ?, address = ?, email = ?, guardian_name = ?, guardian_contact = ?, guardian_address = ?, guardian_relationship = ?, elementary_school = ?, year_graduated = ? WHERE lrn = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssssssssss", $first_name, $middle_name, $last_name, $date_of_birth, $gender, $guardian_name, $guardian_contact, $guardian_relationship, $elementary_school, $year_graduated, $lrn);
+    $stmt->bind_param("ssssssssssss", $first_name, $middle_name, $last_name, $date_of_birth, $gender, $citizenship, $contact_number, $address, $email, $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship, $elementary_school, $year_graduated, $lrn);
 
     // Execute and check for success
     if ($stmt->execute()) {
@@ -59,8 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $last_name = $row['last_name'];
         $date_of_birth = $row['date_of_birth'];
         $gender = $row['gender'];
+        $citizenship = $row['citizenship'];
+        $contact_number = $row['contact_number'];
+        $address = $row['address'];
+        $email = $row['email'];
         $guardian_name = $row['guardian_name'];
         $guardian_contact = $row['guardian_contact'];
+        $guardian_address = $row['guardian_address'];
         $guardian_relationship = $row['guardian_relationship'];
         $elementary_school = $row['elementary_school'];
         $year_graduated = $row['year_graduated'];
@@ -81,100 +92,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Student Profile</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="navigation">
-            <ul>
-
-                <li class="brand-logo">
-                    <a href="index.html">
-                        <div class="logo-container">
-                            <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
-                        </div>
-                        <span class="title">TapInTime</span>
-                    </a>
-                </li>                    
-                
-                <li>
-                    <a href="dashboard.php">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">Dashboard</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_verification.php">
-                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
-                        <span class="title">Student Verification</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_details.php">
-                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
-                        <span class="title">Student Details</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="id_generation.html">
-                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
-                        <span class="title">ID Generation</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
-                        <span class="title">RFID Assignment</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
-                        <span class="title">Faculty Registration</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
-                        <span class="title">Subject Management</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
-                        <span class="title">Attendance Monitoring</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
-                        <span class="title">Students Promotion</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
-                        <span class="title">Users</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
-                        <span class="title">Sign out</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-    </div>
+    <!-- Include Sidebar -->
+    <?php include('sidebar.php'); ?>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -211,6 +132,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <label for="last_name">Last Name:</label>
                                 <input type="text" class="form-control" name="last_name" id="last_name" value="<?php echo $last_name; ?>">
                             </div>
+                            </div>
+
+                            <div class="row">
                             <div class="col-md-4 form-group">
                                 <label for="lrn">LRN:</label>
                                 <input type="text" class="form-control" name="lrn" id="lrn" value="<?php echo $lrn; ?>" readonly>
@@ -226,6 +150,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                     </div>
 
+                    <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label for="lrn">Citizenship</label>
+                                <input type="text" class="form-control" name="citizenship" id="citizenship" value="<?php echo $citizenship; ?>" readonly>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="dob">Contact Number:</label>
+                                <input type="text" class="form-control" name="contact_number" id="contact_number" value="<?php echo $contact_number; ?>">
+                            </div>
+                    </div>
+
+                    <div class="row">
+                    <div class="col-md-4 form-group">
+                                <label for="lrn">Address</label>
+                                <input type="text" class="form-control" name="address" id="address" value="<?php echo $address; ?>" readonly>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="dob">Email Address:</label>
+                                <input type="text" class="form-control" name="email" id="email" value="<?php echo $email; ?>">
+                            </div>
+                        </div>
+                            
+
                     <!-- Parent/Guardian Information -->
                     <div class="form-section">
                         <h2>Parent/Guardian Information</h2>
@@ -237,6 +184,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div class="col-md-4 form-group">
                                 <label for="guardian_contact">Guardian Contact:</label>
                                 <input type="text" class="form-control" name="guardian_contact" id="guardian_contact" value="<?php echo $guardian_contact; ?>">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="guardian_address">Guardian Address:</label>
+                                <input type="text" class="form-control" name="guardian_address" id="guardian_address" value="<?php echo $guardian_address; ?>">
                             </div>
                             <div class="col-md-4 form-group">
                                 <label for="guardian_relationship">Relationship:</label>

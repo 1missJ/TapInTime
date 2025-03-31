@@ -1,13 +1,13 @@
-<?<?php
+<?php
 session_start();
-include 'db_connection.php'; // Ensure correct DB connection
+include 'db_connection.php';
 
 $error = "";
 $success = "";
 
 $target_dir = "uploads/";
 if (!file_exists($target_dir)) {
-    mkdir($target_dir, 0777, true); // Create folder if it doesn’t exist
+    mkdir($target_dir, 0777, true);
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
@@ -21,49 +21,102 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $address = trim($_POST['address']);
     $contact_number = trim($_POST['contact_number']);
     $email = trim($_POST['email']);
+    $section = isset($_POST['section']) ? trim($_POST['section']) : null;
+    $school_year = trim($_POST['school_year']);
     $guardian_name = trim($_POST['guardian_name']);
     $guardian_contact = trim($_POST['guardian_contact']);
+    $guardian_address = trim($_POST['guardian_address']);
     $guardian_relationship = trim($_POST['guardian_relationship']);
     $elementary_school = trim($_POST['elementary_school']);
     $year_graduated = trim($_POST['year_graduated']);
     $created_at = date('Y-m-d H:i:s');
 
-    $valid_extensions = ["jpg", "jpeg", "png"];
-    $uploaded_files = [];
+    // Validate School Year Format (YYYY - YYYY)
+if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
+    $error = "Invalid school year format. Please use 'YYYY-YYYY'.";
+} else {
+    list($start_year, $end_year) = explode("-", $school_year);
+    if ($end_year != ($start_year + 4)) {
+        $error = "Invalid school year range. The end year must be 4 years after the start year.";
+    }
+}
 
-    foreach (["birth_certificate", "id_photo", "good_moral", "student_signature"] as $file_key) {
-        if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] == 0) {
-            $file_ext = strtolower(pathinfo($_FILES[$file_key]['name'], PATHINFO_EXTENSION));
-            if (in_array($file_ext, $valid_extensions)) {
-                $new_file_name = uniqid() . "_" . $file_key . "." . $file_ext;
-                $target_file = $target_dir . $new_file_name;
-                if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target_file)) {
-                    $uploaded_files[$file_key] = $target_file;
-                } else {
-                    $error = "Error uploading $file_key.";
+
+    // Prevent SQL execution if there's an error
+    if (empty($error)) {
+        // Check if LRN or Email already exists in both tables
+        $check_stmt = $conn->prepare("SELECT lrn, email FROM pending_students WHERE lrn = ? OR email = ? UNION SELECT lrn, email FROM students WHERE lrn = ? OR email = ?");
+        $check_stmt->bind_param("ssss", $lrn, $email, $lrn, $email);
+        $check_stmt->execute();
+        $check_stmt->store_result();
+
+        if ($check_stmt->num_rows > 0) {
+            $check_stmt->bind_result($existing_lrn, $existing_email);
+            while ($check_stmt->fetch()) {
+                if ($existing_lrn === $lrn) {
+                    $error = "The LRN '$lrn' already exists in the system. Please use a different LRN.";
                 }
-            } else {
-                $error = "Invalid file type for $file_key. Only JPG, JPEG, and PNG are allowed.";
+                if ($existing_email === $email) {
+                    $error = "The email '$email' is already registered. Please use a different email.";
+                }
             }
         } else {
-            $uploaded_files[$file_key] = null;
-        }
-    }
+            // File Upload Handling
+            $valid_extensions = ["jpg", "jpeg", "png"];
+            $uploaded_files = [];
 
-    if (empty($error)) {
-        $stmt = $conn->prepare("INSERT INTO pending_students (first_name, middle_name, last_name,  lrn, date_of_birth, gender, citizenship, address, contact_number, email, guardian_name, guardian_contact, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssssssssssssss", $first_name, $middle_name, $last_name, $lrn, $date_of_birth, $gender, $citizenship, $address, $contact_number, $email, $guardian_name, $guardian_contact, $guardian_relationship, $elementary_school, $year_graduated, $uploaded_files['birth_certificate'], $uploaded_files['id_photo'], $uploaded_files['good_moral'], $uploaded_files['student_signature'], $created_at);
+            foreach (["birth_certificate", "id_photo", "good_moral", "student_signature"] as $file_key) {
+                if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] == 0) {
+                    $file_ext = strtolower(pathinfo($_FILES[$file_key]['name'], PATHINFO_EXTENSION));
+                    if (in_array($file_ext, $valid_extensions)) {
+                        $new_file_name = uniqid() . "_" . $file_key . "." . $file_ext;
+                        $target_file = $target_dir . $new_file_name;
+                        if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target_file)) {
+                            $uploaded_files[$file_key] = $target_file;
+                        } else {
+                            $error = "Error uploading $file_key.";
+                        }
+                    } else {
+                        $error = "Invalid file type for $file_key. Only JPG, JPEG, and PNG are allowed.";
+                    }
+                } else {
+                    $uploaded_files[$file_key] = null;
+                }
+            }
 
-        if ($stmt->execute()) {
-            $success = "Registration successful!";
-        } else {
-            $error = "Error: " . $stmt->error;
+            // If no errors, proceed with database insertion
+            if (empty($error)) {
+                $stmt = $conn->prepare("INSERT INTO pending_students 
+                    (first_name, middle_name, last_name, lrn, date_of_birth, gender, citizenship, address, contact_number, email, section, school_year, guardian_name, guardian_contact, guardian_address, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                if (!$stmt) {
+                    die("SQL Prepare Error: " . $conn->error);
+                }
+
+                $stmt->bind_param("sssssssssssssssssssssss",
+                    $first_name, $middle_name, $last_name, $lrn, $date_of_birth, $gender,
+                    $citizenship, $address, $contact_number, $email, $section, $school_year,
+                    $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship, $elementary_school,
+                    $year_graduated,
+                    $uploaded_files['birth_certificate'], $uploaded_files['id_photo'],
+                    $uploaded_files['good_moral'], $uploaded_files['student_signature'],
+                    $created_at
+                );
+
+                if ($stmt->execute()) {
+                    $success = "Registration successful!";
+                } else {
+                    $error = "Error: " . $stmt->error;
+                }
+                $stmt->close();
+            }
         }
-        $stmt->close();
+        $check_stmt->close();
     }
-    $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -120,6 +173,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
                 <div class="col-md-6 mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 </div>
+                <div class="col-md-6 mb-3">
+                <input type="text" name="section" class="form-control" placeholder="Section" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
+            </div>          
             </div>
 
             <h4>Parent/Guardian Information</h4>
@@ -129,6 +189,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
                 </div>
                 <div class="col-md-6 mb-3">
                     <input type="text" name="guardian_contact" class="form-control" placeholder="Contact Number" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <input type="text" name="guardian_address" class="form-control" placeholder="Guardian Address" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <input type="text" name="guardian_relationship" class="form-control" placeholder="Relationship to Student" required>
@@ -166,6 +229,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
            <button type="submit" name="submit" class="btn btn-primary w-100">Register</button>
 
         </form>
+
+        <script>
+function updateSchoolYear() {
+    let inputField = document.getElementById('school_year');
+    let value = inputField.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+
+    if (value.length >= 4) {
+        let startYear = value.substring(0, 4); // Get first 4 digits
+        let endYear = parseInt(startYear) + 4;
+
+        if (!isNaN(startYear) && !isNaN(endYear)) {
+            inputField.value = startYear + "-" + endYear; // Format properly
+        }
+    }
+}
+        </script>
+
     </div>
 </body>
 </html>

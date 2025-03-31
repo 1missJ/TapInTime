@@ -26,101 +26,11 @@ if (mysqli_num_rows($result) > 0) {
     <!-- Main CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="navigation">
-            <ul>
+<!-- Include Sidebar -->
+<?php include('sidebar.php'); ?>
 
-                <li class="brand-logo">
-                    <a href="index.html">
-                        <div class="logo-container">
-                            <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
-                        </div>
-                        <span class="title">TapInTime</span>
-                    </a>
-                </li>                    
-                
-                <li>
-                    <a href="dashboard.php">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">Dashboard</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_verification.php">
-                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
-                        <span class="title">Student Verification</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_details.php">
-                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
-                        <span class="title">Student Details</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="id_generation.html">
-                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
-                        <span class="title">ID Generation</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
-                        <span class="title">RFID Assignment</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
-                        <span class="title">Faculty Registration</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
-                        <span class="title">Subject Management</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
-                        <span class="title">Attendance Monitoring</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
-                        <span class="title">Students Promotion</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
-                        <span class="title">Users</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
-                        <span class="title">Sign out</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-    </div>
-    
     <!-- Main Content -->
     <div class="main-content">
         <h2>Student Details</h2>
@@ -133,7 +43,6 @@ if (mysqli_num_rows($result) > 0) {
 
         <!-- Year Level List -->
         <div class="year-levels">
-            <h3>Select Year Level</h3>
             <div class="year-box" onclick="showStudents('Grade 7')">Grade 7</div>
             <div class="year-box" onclick="showStudents('Grade 8')">Grade 8</div>
             <div class="year-box" onclick="showStudents('Grade 9')">Grade 9</div>

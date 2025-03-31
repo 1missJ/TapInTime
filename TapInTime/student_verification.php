@@ -17,100 +17,10 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/verification.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="navigation">
-            <ul>
-
-                <li class="brand-logo">
-                    <a href="index.html">
-                        <div class="logo-container">
-                            <img src="assets/imgs/dahs.jpg" alt="TapInTime Logo">
-                        </div>
-                        <span class="title">TapInTime</span>
-                    </a>
-                </li>                    
-                
-                <li>
-                    <a href="dashboard.php">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">Dashboard</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_verification.php">
-                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
-                        <span class="title">Student Verification</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="student_details.php">
-                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
-                        <span class="title">Student Details</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="id_generation.html">
-                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
-                        <span class="title">ID Generation</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="qr-code-outline"></ion-icon></span>
-                        <span class="title">RFID Assignment</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
-                        <span class="title">Faculty Registration</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
-                        <span class="title">Subject Management</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
-                        <span class="title">Attendance Monitoring</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
-                        <span class="title">Students Promotion</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
-                        <span class="title">Users</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
-                        <span class="title">Sign out</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-    </div>
+    <!-- Include Sidebar -->
+    <?php include('sidebar.php'); ?>
 
     <!-- Main Content -->
 <div class="main-content">
@@ -196,7 +106,7 @@ $result = $conn->query($sql);
                     </div>
                     <div class="form-column">
                         <label>Gender:</label>
-                        <input type="date" id="modalGender" readonly>
+                        <input type="gender" id="modalGender" readonly>
                     </div>
                 </div>
                 
@@ -207,12 +117,16 @@ $result = $conn->query($sql);
                         <input type="text" id="modalCitizenship" readonly>
                     </div>
                     <div class="form-column">
-                        <label>Address:</label>
-                        <input type="text" id="modalAddress" readonly>
-                    </div>
-                    <div class="form-column">
                         <label>Contact Number:</label>
                         <input type="text" id="modalContact" readonly>
+                    </div>
+                </div>
+
+                <div class="modal-form">
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Address:</label>
+                        <input type="text" id="modalAddress" readonly>
                     </div>
                     <div class="form-column">
                         <label>Email Address:</label>
@@ -231,9 +145,16 @@ $result = $conn->query($sql);
                         <label>Contact Number:</label>
                         <input type="text" id="modalGuardianContact" readonly>
                     </div>
+                    </div>
+                    
+                    <div class="modal-form">
+                    <div class="form-column">
+                        <label>Guardian Address:</label>
+                        <input type="text" id="modalGuardianAddress" readonly>
+                    </div>
                     <div class="form-column">
                         <label>Relationship:</label>
-                        <input type="text" id="modalGuardianRelation" readonly>
+                        <input type="text" id="modalGuardianRelationship" readonly>
                     </div>
                 </div>
 
@@ -254,7 +175,7 @@ $result = $conn->query($sql);
         <div class="modal-form">
                 <div class="form-row">
                     <div class="form-column">
-                        <label>Assigned Section:</label>
+                        <label>Section:</label>
                         <input type="text" id="modalSection" readonly>
                     </div>
                 </div>
@@ -310,36 +231,50 @@ function searchStudent() {
     }
 
     function viewStudent(student) {
-    // Populate the modal with student details
+    console.log("Student ID Photo Path from DB: ", student.id_photo); // Debugging
+
     document.getElementById("modalFirstName").value = student.first_name || "";
     document.getElementById("modalMiddleName").value = student.middle_name || "";
     document.getElementById("modalLastName").value = student.last_name || "";
     document.getElementById("modalLRN").value = student.lrn || "";
     document.getElementById("modalDOB").value = student.date_of_birth || "";
-    document.getElementById("modalGender").value = student.gender || "Male"; // Default value
+    document.getElementById("modalGender").value = student.gender || "";
     document.getElementById("modalCitizenship").value = student.citizenship || "";
     document.getElementById("modalAddress").value = student.address || "";
     document.getElementById("modalContact").value = student.contact_number || "";
     document.getElementById("modalEmail").value = student.email || "";
 
     document.getElementById("modalGuardianName").value = student.guardian_name || "";
+    document.getElementById("modalGuardianAddress").value = student.guardian_address || "";
     document.getElementById("modalGuardianContact").value = student.guardian_contact || "";
-    document.getElementById("modalGuardianRelation").value = student.guardian_relation || "";
+    document.getElementById("modalGuardianRelationship").value = student.guardian_relationship || "";
 
     document.getElementById("modalElemSchool").value = student.elementary_school || "";
     document.getElementById("modalYearGraduated").value = student.year_graduated || "";
+    document.getElementById("modalSection").value = student.section || "Not Assigned";
 
-    document.getElementById("modalIDPhoto").src = "/uploads/" + (student.id_photo || "default.jpg");
-    document.getElementById("modalBirthCert").src = "/uploads/" + (student.birth_certificate || "default.jpg");
-    document.getElementById("modalGoodMoral").src = "/uploads/" + (student.good_moral || "default.jpg");
-    document.getElementById("modalSignatureImage").src = "/uploads/" + (student.signature || "default.jpg");
+    // Assign image paths correctly
+    document.getElementById("modalIDPhoto").src = student.id_photo && student.id_photo.trim() !== "" 
+        ? student.id_photo  // Use as is since it already includes "uploads/"
+        : "uploads/default.png";
 
-    document.getElementById("modalSection").value = student.assigned_section || "Not Assigned";
+    document.getElementById("modalBirthCert").src = student.birth_certificate && student.birth_certificate.trim() !== "" 
+        ? student.birth_certificate
+        : "uploads/default.jpg";
+
+    document.getElementById("modalGoodMoral").src = student.good_moral && student.good_moral.trim() !== "" 
+        ? student.good_moral
+        : "uploads/default.jpg";
+
+    document.getElementById("modalSignatureImage").src = student.student_signature && student.student_signature.trim() !== "" 
+        ? student.student_signature
+        : "uploads/default.jpg";
+
+    console.log("Final Image Path: ", document.getElementById("modalIDPhoto").src); // Debugging
 
     // Show the modal
     document.getElementById("studentModal").style.display = "block";
 }
-
 
     // Close modal function
     function closeModal() {
