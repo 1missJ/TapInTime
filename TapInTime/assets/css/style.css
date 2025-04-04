@@ -361,14 +361,6 @@ body {
     font-size: 16px;
 }
  /* Student Profile */
- .rectangle-img {
-    width: 150px; /* Adjust width */
-    height: 200px; /* Adjust height for a rectangle */
-    object-fit: cover;
-    border-radius: 5px; /* Optional: Slightly rounded corners */
-    border: 2px solid #ddd; /* Optional: Border styling */
-}
-
  .profile-pic {
     text-align: center;
     margin-bottom: 40px;
@@ -557,18 +549,37 @@ transform: scale(1.05);
 .year-levels .year-box:hover {
     background: #2980B9;
 }
-.rectangle-container {
-    width: 125px;  /* Adjust based on your design */
-    height: 150px; /* Adjust based on your design */
+
+.document-box {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    text-align: center;
+    position: relative;
+    padding: 20px;
+    border: 2px solid #ddd; /* Optional border */
+    border-radius: 10px; /* Optional rounded corners */
+    width: 100%; /* Ensures equal width */
+    height: 250px; /* Ensures equal height */
+    justify-content: center;
+}
+
+.document-box label {
+    position: absolute;
+    top: -15px; /* Moves the label outside */
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    background: white;
+    padding: 2px 5px;
+    z-index: 10;
 }
 
 .rectangle-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: 100%; /* Ensures images fit inside */
+    max-width: 150px; /* Adjust as needed */
+    height: 200px; /* Fixed height */
+    object-fit: cover; /* Ensures images fill the rectangle */
+    border-radius: 5px;
+    border: 2px solid #ddd;
 }
-

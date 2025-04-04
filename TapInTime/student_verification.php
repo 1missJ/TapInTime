@@ -130,7 +130,23 @@ $result = $conn->query($sql);
                     </div>
                     <div class="form-column">
                         <label>Email Address:</label>
-                        <input type="email" id="modalEmail" readonly>
+                        <input type="text" id="modalEmail" readonly>
+                    </div>
+                </div>
+
+                <div class="modal-form">
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Section:</label>
+                        <input type="text" id="modalSection" readonly>
+                    </div>
+                    <div class="form-column">
+                        <label>School Year:</label>
+                        <input type="text" id="modalSchoolYear" readonly>
+                    </div>
+                    <div class="form-column">
+                        <label>Student Type:</label>
+                        <input type="text" id="modalStudentType" readonly>
                     </div>
                 </div>
 
@@ -170,16 +186,7 @@ $result = $conn->query($sql);
                         <input type="text" id="modalYearGraduated" readonly>
                     </div>
                 </div>
-
-                <h2>Section Assignment</h2>
-        <div class="modal-form">
-                <div class="form-row">
-                    <div class="form-column">
-                        <label>Section:</label>
-                        <input type="text" id="modalSection" readonly>
-                    </div>
-                </div>
-                
+     
         <div class="grid-container">
             <div class="form-column">
                 <label>Recent ID Photo:</label>
@@ -243,6 +250,9 @@ function searchStudent() {
     document.getElementById("modalAddress").value = student.address || "";
     document.getElementById("modalContact").value = student.contact_number || "";
     document.getElementById("modalEmail").value = student.email || "";
+    document.getElementById("modalSection").value = student.section || "";
+    document.getElementById("modalSchoolYear").value = student.school_year || "";
+    document.getElementById("modalStudentType").value = student.student_type || "";
 
     document.getElementById("modalGuardianName").value = student.guardian_name || "";
     document.getElementById("modalGuardianAddress").value = student.guardian_address || "";
@@ -251,7 +261,6 @@ function searchStudent() {
 
     document.getElementById("modalElemSchool").value = student.elementary_school || "";
     document.getElementById("modalYearGraduated").value = student.year_graduated || "";
-    document.getElementById("modalSection").value = student.section || "Not Assigned";
 
     // Assign image paths correctly
     document.getElementById("modalIDPhoto").src = student.id_photo && student.id_photo.trim() !== "" 
