@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $email = trim($_POST['email']);
     $section = isset($_POST['section']) ? trim($_POST['section']) : null;
     $school_year = trim($_POST['school_year']);
+    $student_type = trim($_POST['student_type']);
     $guardian_name = trim($_POST['guardian_name']);
     $guardian_contact = trim($_POST['guardian_contact']);
     $guardian_address = trim($_POST['guardian_address']);
@@ -87,16 +88,16 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
             // If no errors, proceed with database insertion
             if (empty($error)) {
                 $stmt = $conn->prepare("INSERT INTO pending_students 
-                    (first_name, middle_name, last_name, lrn, date_of_birth, gender, citizenship, address, contact_number, email, section, school_year, guardian_name, guardian_contact, guardian_address, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    (first_name, middle_name, last_name, lrn, date_of_birth, gender, citizenship, address, contact_number, email, section, school_year, student_type, guardian_name, guardian_contact, guardian_address, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 if (!$stmt) {
                     die("SQL Prepare Error: " . $conn->error);
                 }
 
-                $stmt->bind_param("sssssssssssssssssssssss",
+                $stmt->bind_param("ssssssssssssssssssssssss",
                     $first_name, $middle_name, $last_name, $lrn, $date_of_birth, $gender,
-                    $citizenship, $address, $contact_number, $email, $section, $school_year,
+                    $citizenship, $address, $contact_number, $email, $section, $school_year, $student_type,
                     $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship, $elementary_school,
                     $year_graduated,
                     $uploaded_files['birth_certificate'], $uploaded_files['id_photo'],
@@ -148,6 +149,7 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                 <div class="col-md-4 mb-3">
                     <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
                 </div>
+
                 <div class="col-md-4 mb-3">
                     <input type="text" name="lrn" class="form-control" placeholder="LRN (12 digits)" required>
                 </div>
@@ -161,25 +163,36 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                         <option value="Female">Female</option>
                     </select>
                 </div>
+
                 <div class="col-md-6 mb-3">
                     <input type="text" name="citizenship" class="form-control" placeholder="Citizenship" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <input type="text" name="address" class="form-control" placeholder="Address" required>
                 </div>
+
                 <div class="col-md-6 mb-3">
                     <input type="text" name="contact_number" class="form-control" placeholder="Contact Number" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 </div>
-                <div class="col-md-6 mb-3">
-                <input type="text" name="section" class="form-control" placeholder="Section" required>
-                </div>
+            </div>
 
-                <div class="col-md-6 mb-3">
-                <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
-            </div>          
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <input type="text" name="section" class="form-control" placeholder="Section" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <select name="student_type" class="form-control" required>
+                    <option value="">Student Type</option>
+                    <option value="Regular Student">Regular Student</option>
+                    <option value="STI">STI</option>
+                    </select>
+                </div>
             </div>
 
             <h4>Parent/Guardian Information</h4>

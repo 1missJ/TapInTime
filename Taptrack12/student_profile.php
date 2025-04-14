@@ -11,12 +11,15 @@ if (isset($_GET['lrn'])) {
 }
 
 // Initialize variables
-$id_photo = "assets/imgs/default-profile.png"; // Default image
-$first_name = $middle_name = $last_name = $date_of_birth = $gender = ""; 
-$citizenship = $contact_number = $address = $email = "";
+$first_name = $middle_name = $last_name = $date_of_birth = $gender = "";
 $guardian_name = $guardian_contact = $guardian_address = $guardian_relationship = "";
 $elementary_school = $year_graduated = "";
 $birth_certificate = $good_moral = $student_signature = "";
+
+$id_photo_path = !empty($id_photo) ? "uploads/$id_photo" : "assets/imgs/placeholder.png";
+$birth_certificate_path = !empty($birth_certificate) ? "uploads/$birth_certificate" : "assets/imgs/placeholder.png";
+$good_moral_path = !empty($good_moral) ? "uploads/$good_moral" : "assets/imgs/placeholder.png";
+$student_signature_path = !empty($student_signature) ? "uploads/$student_signature" : "assets/imgs/placeholder.png";
 
 // Fetch student profile based on LRN
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -59,7 +62,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $id_photo = !empty($row['id_photo']) ? 'uploads/' . $row['id_photo'] : $id_photo;
         $first_name = $row['first_name'];
         $middle_name = $row['middle_name'];
         $last_name = $row['last_name'];
@@ -75,10 +77,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $guardian_relationship = $row['guardian_relationship'];
         $elementary_school = $row['elementary_school'];
         $year_graduated = $row['year_graduated'];
+        $id_photo = $row['id_photo'];
         $birth_certificate = $row['birth_certificate'];
         $good_moral = $row['good_moral'];
         $student_signature = $row['student_signature'];
-    } else {
+    }else {
         echo "<script>alert('No student data found!');</script>";
     }
 }
@@ -97,22 +100,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- Include Sidebar -->
     <?php include('sidebar.php'); ?>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="row">
             <div class="col-md-8">
                 <form method="POST" action="">
-                    <!-- Profile Picture -->
                     <div class="row mb-4">
                         <div class="col-md-3">
-                            <div class="rectangle-container">
-                                <?php 
-                                    // Default image path
-                                    $defaultImage = "assets/uploads/default-profile.jpeg";
-                                    $imagePath = (!empty($id_photo) && file_exists($id_photo)) ? $id_photo : $defaultImage;
-                                ?>
-                                <img src="<?php echo htmlspecialchars($imagePath); ?>"class="rectangle-img">
-                            </div>
+                        <div class="rectangle-container">
+                            <img src="<?php echo !empty($id_photo) ? $id_photo : 'assets/imgs/placeholder.png'; ?>" class="rectangle-img">
+                        </div>
                         </div>
                     </div>
 
@@ -172,7 +168,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
                         </div>
                             
-
                     <!-- Parent/Guardian Information -->
                     <div class="form-section">
                         <h2>Parent/Guardian Information</h2>
@@ -213,41 +208,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <!-- Required Documents -->
                     <div class="form-section">
-                        <h2>Required Documents</h2>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="birth_certificate">Birth Certificate:</label><br>
-                                <?php if (!empty($birth_certificate)) : ?>
-                                    <img src="uploads/<?php echo htmlspecialchars($birth_certificate); ?>" class="rectangle-document">
-                                <?php else : ?>
-                                    <span>No document uploaded</span>
-                                <?php endif; ?>
+                    <h2>Documents</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="rectangle-container">
+                                <label for="birth_certificate">Birth Certificate:</label>
+                                <img src="<?php echo !empty($birth_certificate) ? $birth_certificate : 'assets/imgs/placeholder.png'; ?>" class="document-box">
                             </div>
-                            <div class="col-md-4 form-group">
-                                <label for="form_137">Good Moral Certificate:</label><br>
-                                <?php if (!empty($good_moral)) : ?>
-                                    <img src="uploads/<?php echo htmlspecialchars($good_moral); ?>" class="rectangle-document">
-                                <?php else : ?>
-                                    <span>No document uploaded</span>
-                                <?php endif; ?>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="rectangle-container">
+                                <label for="good_moral">Good Moral Certificate:</label>
+                                <img src="<?php echo !empty($good_moral) ? $good_moral : 'assets/imgs/placeholder.png'; ?>" class="document-box">
                             </div>
-                            <div class="col-md-4 form-group">
-                                <label for="student_signature">Student Signature:</label><br>
-                                <?php if (!empty($student_signature)) : ?>
-                                    <img src="uploads/<?php echo htmlspecialchars($student_signature); ?>" class="rectangle-document">
-                                <?php else : ?>
-                                    <span>No document uploaded</span>
-                                <?php endif; ?>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="rectangle-container">
+                                <label for="student_signature">Student Signature:</label>
+                                <img src="<?php echo !empty($student_signature) ? $student_signature : 'assets/imgs/placeholder.png'; ?>" class="document-box">
                             </div>
                         </div>
                     </div>
 
                     <!-- Buttons -->
-<!-- Buttons -->
-<div class="form-buttons">
-    <button class="save-btn" type="submit">Save</button>
-    <button class="close-btn" id="closeBtn" type="button">Close</button>
-</div>
+                    <div class="form-buttons">
+                        <button class="save-btn" type="submit">Save</button>
+                        <button class="close-btn" id="closeBtn" type="button">Close</button>
+                    </div>
 
                 </form>
             </div>
