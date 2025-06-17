@@ -176,22 +176,27 @@ body {
 }
 
 /* Page Title */
-.main-content h2 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
+.main-content h2{
+        text-align: left;
+        margin-left: 20px;
+        font-family: 'Arial', sans-serif;
+        font-weight: 600;
+        color: #333;
+        font-size: 30px;
+    }
 
 /* Search Bar */
 .search-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 5px;
 }
 
 .search-container input {
-    width: 250px;
+    width: 200px;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -199,7 +204,7 @@ body {
 }
 
 .search-container button {
-    padding: 8px 15px;
+    padding: 7px 14px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -210,6 +215,20 @@ body {
 
 .search-container button:hover {
     background-color: #0056b3;
+}
+
+.left-search {
+    display: flex;
+    gap: 10px;
+}
+
+.right-filter select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    font-weight: bold;
+    min-width: 160px;
 }
 
 /* Table Styling */
@@ -275,7 +294,7 @@ body {
     transition: 0.3s;
 }
 
-/* Approve Button */
+/* Verification Button */
 .approve-btn {
     background-color: #28a745;
     color: white;
@@ -314,6 +333,17 @@ body {
     font-size: 16px;
 }
 
+input.form-control {
+    outline: 2px #495057;
+    transition: outline 0.2s ease-in-out;
+}
+
+input.form-control:focus {
+    outline: 2px #495057;
+    box-shadow: none;
+}
+
+
 /*Student details modal in verification */
 .modal {
     display: none;
@@ -336,40 +366,11 @@ body {
     text-align: center;
 }
 
-.close {
+.btn-close {
     color: red;
     float: right;
     font-size: 24px;
     cursor: pointer;
-}
-
-.view-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 12px;
-    display: inline-flex; /* Ensures proper alignment with other buttons */
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.view-btn:hover {
-    background-color: #0056b3;
-}
-
-.view-btn ion-icon {
-    font-size: 16px;
-}
- /* Student Profile */
- .profile-pic {
-    text-align: center;
-    margin-bottom: 40px;
-}
-.profile-pic img {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    object-fit: cover;
 }
 
 /* Form Sections */
@@ -417,7 +418,54 @@ body {
     min-width: 250px; /* Adjust the min-width as needed */
 }
 
-/* Button Styles */
+/* Student Profile */
+.id-photo-box {
+    display: flex;
+    padding: 5px;
+}
+
+.id-photo-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.rectangle-img {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    width: 50%; /* Ensures equal width */
+    height: 250px; /* Ensures equal height */
+    justify-content: center;
+}
+
+.document-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding: 20px;
+    border: 2px solid #ddd; /* Optional border */
+    width: 100%; /* Ensures equal width */
+    height: 250px; /* Ensures equal height */
+    justify-content: center;
+}
+
+.document-box label {
+    position: absolute;
+    top: -20px; /* Adjust this to position the label above the image */
+    left: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.7); /* Optional: Background for better visibility */
+    padding: 5px 10px; /* Padding for the label */
+}
+
+/* Details Button*/
 .form-buttons {
 display: flex;
 justify-content: flex-end;  /* Align buttons to the right */
@@ -425,10 +473,27 @@ gap: 20px;  /* Space between buttons */
 margin-top: 30px; /* Add some spacing from other elements */
 }
 
+.edit {
+  background-color: #ffc107 !important;
+  color: black !important;
+}
+.archive {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+.unarchive {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+.view {
+  background-color: #3535dc !important;
+  color: white !important;
+}
+
 .save-btn, .close-btn {
-padding: 12px 25px;
-font-size: 16px;
-border-radius: 6px;
+padding: 8px 20px;
+font-size: 12px;
+border-radius: 3px;
 cursor: pointer;
 border: none;
 transition: background-color 0.3s ease, transform 0.2s ease;
@@ -453,55 +518,6 @@ color: white;
 background-color: #e53935;
 transform: scale(1.05);
 }
-
-/* Student details button */
-.edit-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    background-color: #ffc107;
-    color: black;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.edit-btn:hover {
-    background-color: #e0a800;
-}
-
-.archive-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    background-color: #dc3545;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.archive-btn:hover {
-    background-color: #c82333;
-}
-
-.view-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    background-color: #3535dc;
-    color: white;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.view-btn:hover {
-    color: #0056b3;
-}
-
 
 /* ID Generation Button */
 .generate-btn {
@@ -550,36 +566,108 @@ transform: scale(1.05);
     background: #2980B9;
 }
 
-.document-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+/* Student Promotion */
+.year-box-wrapper {
     position: relative;
-    padding: 20px;
-    border: 2px solid #ddd; /* Optional border */
-    border-radius: 10px; /* Optional rounded corners */
-    width: 100%; /* Ensures equal width */
-    height: 250px; /* Ensures equal height */
-    justify-content: center;
+    flex: 1;
+    min-width: 120px;
 }
 
-.document-box label {
+.dropdown {
+    display: none;
     position: absolute;
-    top: -15px; /* Moves the label outside */
-    left: 50%;
-    transform: translateX(-50%);
-    font-weight: bold;
-    background: white;
-    padding: 2px 5px;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #ccc;
     z-index: 10;
+    width: 100%;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.rectangle-img {
-    width: 100%; /* Ensures images fit inside */
-    max-width: 150px; /* Adjust as needed */
-    height: 200px; /* Fixed height */
-    object-fit: cover; /* Ensures images fill the rectangle */
+.dropdown div {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #333;
+    background: #f9f9f9;
+}
+
+.dropdown div:hover {
+    background: #e0e0e0;
+}
+
+.year-box-wrapper:hover .dropdown {
+    display: block;
+}
+
+.actions-header .header-content {
+  display: flex;
+  justify-content: space-between; /* pushes text left, icon right */
+  align-items: center;
+  width: 100%;
+}
+
+.actions-header .header-icon {
+  font-size: 18px;
+  color: #f9f9f9; /* or whatever fits your theme */
+  cursor: pointer;
+}
+
+/* Dropdown styles */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  min-width: 110px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #333;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.dropdown-item:hover {
+background-color: #f0f0f0;
+}
+
+.promote-btn {
+    position: fixed;
+    right: 20px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
     border-radius: 5px;
-    border: 2px solid #ddd;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.promote-btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-promote {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-left: 8px; /* optional spacing after View button */
+}
+
+.btn-promotes:hover {
+    background-color: #0056b3;
 }

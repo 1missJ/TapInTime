@@ -4,29 +4,24 @@ include 'db_connection.php';
 
 // Check if LRN is passed in URL
 if (isset($_GET['lrn'])) {
-    $lrn = $_GET['lrn'];  // Get LRN from URL
+    $lrn = $_GET['lrn'];
 } else {
     echo "<script>alert('Student not found!'); window.location='student_details.php';</script>";
     exit();
 }
 
+// Determine mode and readonly status
+$mode = isset($_GET['mode']) ? $_GET['mode'] : 'edit';
+$is_readonly = ($mode === 'view');
+
 // Initialize variables
-$id_photo = "assets/imgs/default-profile.png"; // Default profile picture
-$first_name = $middle_name = $last_name = $date_of_birth = $gender = "";
+$first_name = $middle_name = $last_name = $date_of_birth = $gender = $citizenship = $contact_number = $address = $email = "";
 $guardian_name = $guardian_contact = $guardian_address = $guardian_relationship = "";
 $elementary_school = $year_graduated = "";
-$birth_certificate = $good_moral = $student_signature = "";
+$id_photo = $birth_certificate = $good_moral = $student_signature = "";
 
-$id_photo_path = !empty($id_photo) ? "uploads/$id_photo" : "assets/imgs/placeholder.png";
-$birth_certificate_path = !empty($birth_certificate) ? "uploads/$birth_certificate" : "assets/imgs/placeholder.png";
-$good_moral_path = !empty($good_moral) ? "uploads/$good_moral" : "assets/imgs/placeholder.png";
-$student_signature_path = !empty($student_signature) ? "uploads/$student_signature" : "assets/imgs/placeholder.png";
-
-
-
-// Fetch student profile based on LRN
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data from POST
+// Handle POST (Update student)
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !$is_readonly) {
     $first_name = $_POST['first_name'];
     $middle_name = $_POST['middle_name'];
     $last_name = $_POST['last_name'];
@@ -43,21 +38,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $elementary_school = $_POST['elementary_school'];
     $year_graduated = $_POST['year_graduated'];
 
-    // Update student profile in the database
-    $sql = "UPDATE students SET first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?, gender = ?, citizenship = ?, contact_number = ?, address = ?, email = ?, guardian_name = ?, guardian_contact = ?, guardian_address = ?, guardian_relationship = ?, elementary_school = ?, year_graduated = ? WHERE lrn = ?";
+    $sql = "UPDATE students SET first_name=?, middle_name=?, last_name=?, date_of_birth=?, gender=?, citizenship=?, contact_number=?, address=?, email=?, guardian_name=?, guardian_contact=?, guardian_address=?, guardian_relationship=?, elementary_school=?, year_graduated=? WHERE lrn=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssssssssss", $first_name, $middle_name, $last_name, $date_of_birth, $gender, $citizenship, $contact_number, $address, $email, $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship, $elementary_school, $year_graduated, $lrn);
+    $stmt->bind_param("ssssssssssssssss", 
+        $first_name, $middle_name, $last_name, $date_of_birth, $gender, $citizenship, $contact_number,
+        $address, $email, $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship,
+        $elementary_school, $year_graduated, $lrn
+    );
 
-    // Execute and check for success
     if ($stmt->execute()) {
-        echo "<script>alert('Student details updated successfully'); window.location='student_details.php?lrn=" . $lrn . "';</script>";
+        echo "<script>alert('Student details updated successfully'); window.location='student_profile.php?lrn=$lrn&mode=view';</script>";
     } else {
         echo "<script>alert('Error updating student details.');</script>";
     }
     $stmt->close();
 } else {
-    // Fetch student data if not updating
-    $sql = "SELECT * FROM students WHERE lrn = ?";
+    // Fetch student data
+    $sql = "SELECT * FROM students WHERE lrn=?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $lrn);
     $stmt->execute();
@@ -65,10 +62,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $id_photo_path = (!empty($row['id_photo']) && file_exists('uploads/' . $row['id_photo']))
-            ? 'uploads/' . $row['id_photo']
-            : 'assets/imgs/placeholder.png';
-    
         $first_name = $row['first_name'];
         $middle_name = $row['middle_name'];
         $last_name = $row['last_name'];
@@ -84,13 +77,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $guardian_relationship = $row['guardian_relationship'];
         $elementary_school = $row['elementary_school'];
         $year_graduated = $row['year_graduated'];
+        $id_photo = $row['id_photo'];
         $birth_certificate = $row['birth_certificate'];
         $good_moral = $row['good_moral'];
         $student_signature = $row['student_signature'];
-    }else {
+    } else {
         echo "<script>alert('No student data found!');</script>";
     }
 }
+
+// Set file paths
+$id_photo_path = !empty($id_photo) ? "uploads/$id_photo" : "assets/imgs/placeholder.png";
+$birth_certificate_path = !empty($birth_certificate) ? "uploads/$birth_certificate" : "assets/imgs/placeholder.png";
+$good_moral_path = !empty($good_moral) ? "uploads/$good_moral" : "assets/imgs/placeholder.png";
+$student_signature_path = !empty($student_signature) ? "uploads/$student_signature" : "assets/imgs/placeholder.png";
 ?>
 
 <!DOCTYPE html>
@@ -99,155 +99,162 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
-    <!-- Include Sidebar -->
-    <?php include('sidebar.php'); ?>
-
-    <div class="main-content">
-        <div class="row">
-            <div class="col-md-8">
-                <form method="POST" action="">
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="rectangle-container">
-                            <img src="<?php echo $id_photo_path; ?>" class="rectangle-img">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Personal Information -->
-                    <div class="form-section">
-                        <h2>Personal Information</h2>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="first_name">First Name:</label>
-                                <input type="text" class="form-control" name="first_name" id="first_name" value="<?php echo $first_name; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="middle_name">Middle Name:</label>
-                                <input type="text" class="form-control" name="middle_name" id="middle_name" value="<?php echo $middle_name; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="last_name">Last Name:</label>
-                                <input type="text" class="form-control" name="last_name" id="last_name" value="<?php echo $last_name; ?>">
-                            </div>
-                            </div>
-
-                            <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="lrn">LRN:</label>
-                                <input type="text" class="form-control" name="lrn" id="lrn" value="<?php echo $lrn; ?>" readonly>
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="dob">Date of Birth:</label>
-                                <input type="text" class="form-control" name="date_of_birth" id="date_of_birth" value="<?php echo $date_of_birth; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="gender">Gender:</label>
-                                <input type="text" class="form-control" name="gender" id="gender" value="<?php echo $gender; ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="lrn">Citizenship</label>
-                                <input type="text" class="form-control" name="citizenship" id="citizenship" value="<?php echo $citizenship; ?>" readonly>
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="dob">Contact Number:</label>
-                                <input type="text" class="form-control" name="contact_number" id="contact_number" value="<?php echo $contact_number; ?>">
-                            </div>
-                    </div>
-
-                    <div class="row">
-                    <div class="col-md-4 form-group">
-                                <label for="lrn">Address</label>
-                                <input type="text" class="form-control" name="address" id="address" value="<?php echo $address; ?>" readonly>
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="dob">Email Address:</label>
-                                <input type="text" class="form-control" name="email" id="email" value="<?php echo $email; ?>">
-                            </div>
-                        </div>
-                            
-
-                    <!-- Parent/Guardian Information -->
-                    <div class="form-section">
-                        <h2>Parent/Guardian Information</h2>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="guardian_name">Guardian Name:</label>
-                                <input type="text" class="form-control" name="guardian_name" id="guardian_name" value="<?php echo $guardian_name; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="guardian_contact">Guardian Contact:</label>
-                                <input type="text" class="form-control" name="guardian_contact" id="guardian_contact" value="<?php echo $guardian_contact; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="guardian_address">Guardian Address:</label>
-                                <input type="text" class="form-control" name="guardian_address" id="guardian_address" value="<?php echo $guardian_address; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="guardian_relationship">Relationship:</label>
-                                <input type="text" class="form-control" name="guardian_relationship" id="guardian_relationship" value="<?php echo $guardian_relationship; ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Academic Information -->
-                    <div class="form-section">
-                        <h2>Academic Information</h2>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="elementary_school">Elementary School:</label>
-                                <input type="text" class="form-control" name="elementary_school" id="elementary_school" value="<?php echo $elementary_school; ?>">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="year_graduated">Year Graduated:</label>
-                                <input type="text" class="form-control" name="year_graduated" id="year_graduated" value="<?php echo $year_graduated; ?>">
-                            </div>
-                        </div>
-                    </div>
-
-<!-- Required Documents -->
-<div class="form-section">
-<h2>Documents</h2>
 <div class="row">
-    <div class="col-md-4">
-        <div class="document-box">
-            <label for="birth_certificate">Birth Certificate:</label>
-            <img src="<?php echo !empty($birth_certificate) ? $birth_certificate : 'assets/imgs/placeholder.png'; ?>" class="rectangle-img">
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="document-box">
-            <label for="good_moral">Good Moral Certificate:</label>
-            <img src="<?php echo !empty($good_moral) ? $good_moral : 'assets/imgs/placeholder.png'; ?>" class="rectangle-img">
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="document-box">
-            <label for="student_signature">Student Signature:</label>
-            <img src="<?php echo !empty($student_signature) ? $student_signature : 'assets/imgs/placeholder.png'; ?>" class="rectangle-img">
-        </div>
-    </div>
+    <?php include('sidebar.php'); ?>
 </div>
 
+<div class="main-content">
+    <form method="POST" action="">
+<div class="card">
+            <div class="card-header bg-primary text-white">
+                Personal Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="<?= $first_name ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="middle_name">Middle Name:</label>
+                                <input type="text" class="form-control" name="middle_name" value="<?= $middle_name ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="last_name">Last Name:</label>
+                                <input type="text" class="form-control" name="last_name" value="<?= $last_name ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                </div>
 
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                                <label for="lrn">LRN:</label>
+                                <input type="text" class="form-control" name="lrn" value="<?= $lrn ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="dob">Date of Birth:</label>
+                                <input type="text" class="form-control" name="date_of_birth" value="<?= $date_of_birth ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="gender">Gender:</label>
+                                <input type="text" class="form-control" name="gender" value="<?= $gender ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="lrn">Citizenship</label>
+                                <input type="text" class="form-control" name="citizenship" value="<?= $citizenship ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                                <label for="dob">Contact Number:</label>
+                                <input type="text" class="form-control" name="contact_number" value="<?= $contact_number ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="lrn">Address</label>
+                                <input type="text" class="form-control" name="address" value="<?= $address ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="dob">Email Address:</label>
+                                <input type="text" class="form-control" name="email" value="<?= $email ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                </div>
+</div>
+
+        <!-- Guardian Info -->
+<div class="card">
+            <div class="card-header bg-primary text-white">
+                Parent/Guardian Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                                <label for="guardian_name">Guardian Name:</label>
+                                <input type="text" class="form-control" name="guardian_name" value="<?= $guardian_name ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="guardian_contact">Guardian Contact:</label>
+                                <input type="text" class="form-control" name="guardian_contact" value="<?= $guardian_contact ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                                <label for="guardian_address">Guardian Address:</label>
+                                <input type="text" class="form-control" name="guardian_address" value="<?= $guardian_address ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4 form-group">
+                                <label for="guardian_relationship">Relationship:</label>
+                                <input type="text" class="form-control" name="guardian_relationship" value="<?= $guardian_relationship ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                </div>
+            </div>
+
+                    <!-- Academic Information -->
+<div class="card">
+            <div class="card-header bg-primary text-white">
+                Academic Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                                <label for="elementary_school">Elementary School:</label>
+                                <input type="text" class="form-control" name="elementary_school" value="<?= $elementary_school ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-4  form-group">
+                                <label for="year_graduated">Year Graduated:</label>
+                                <input type="text" class="form-control" name="year_graduated" value="<?= $year_graduated ?>" <?= $is_readonly ? 'readonly' : '' ?>>
+                    </div>
+            </div>
+        </div>
+
+                    <!-- Required Documents -->
+<div class="card">
+            <div class="card-header bg-primary text-white">
+            Documents
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4  form-group">
+                            <div class="rectangle-container">
+                                <label for="id_photo">ID Photo:</label>
+                                <img src="<?php echo !empty($id_photo) ? $id_photo : 'assets/imgs/placeholder.png'; ?>" class="document-box">
+                            </div>
+                        </div>
+                    <div class="col-md-4  form-group">
+                            <div class="rectangle-container">
+                                <label for="birth_certificate">Birth Certificate:</label>
+                                <img src="<?php echo !empty($birth_certificate) ? $birth_certificate : 'assets/imgs/placeholder.png'; ?>" class="document-box">
+                            </div>
+                        </div>
+                        <div class="col-md-4  form-group">
+                            <div class="rectangle-container">
+                                <label for="good_moral">Good Moral Certificate:</label>
+                                <img src="<?php echo !empty($good_moral) ? $good_moral : 'assets/imgs/placeholder.png'; ?>" class="document-box">
+                            </div>
+                        </div>
+                        <div class="col-md-4  form-group">
+                            <div class="rectangle-container">
+                                <label for="student_signature">Student Signature:</label>
+                                <img src="<?php echo !empty($student_signature) ? $student_signature : 'assets/imgs/placeholder.png'; ?>" class="document-box">
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Buttons -->
                     <div class="form-buttons">
-                        <button class="save-btn" type="submit">Save</button>
-                        <button class="close-btn" id="closeBtn" type="button">Close</button>
+                        <?php if (!$is_readonly): ?>
+                            <button class="save-btn" type="submit">Save</button>
+                        <?php endif; ?>
+                            <button class="close-btn" id="closeBtn" type="button">Close</button>
                     </div>
-
-                </form>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 
     <script>

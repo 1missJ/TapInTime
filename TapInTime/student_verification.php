@@ -2,20 +2,34 @@
 // Ipasok ang database connection
 include 'db_connection.php'; 
 
-// Query para kunin ang mga pending students
-$sql = "SELECT * FROM pending_students";
+// Helper function to format names as "LastName, FirstName M."
+function formatName($first, $middle, $last) {
+    $cap = function($str) {
+        return ucfirst(strtolower($str));
+    };
+    
+    $lastName = $cap($last);
+    $firstName = $cap($first);
+    $middleInitial = $middle ? strtoupper(substr($middle, 0, 1)) . '.' : '';
+    
+    return "{$lastName}, {$firstName} {$middleInitial}";
+}
+
+// Query para kunin ang mga pending students, ordered by registered date (newest first)
+$sql = "SELECT * FROM pending_students ORDER BY created_at DESC";
 $result = $conn->query($sql);
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Student Verification - TapInTime</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/verification.css">
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/verification.css" />
 </head>
 
 <body>
@@ -23,55 +37,57 @@ $result = $conn->query($sql);
     <?php include('sidebar.php'); ?>
 
     <!-- Main Content -->
-<div class="main-content">
-    <h2>Student Verification</h2>
+    <div class="main-content">
+        <h2>Student Verification</h2>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search student...">
-        <button onclick="searchStudent()">Search</button>
-    </div>
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="left-search">
+                <form id="searchForm" onsubmit="return handleSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search by LRN and Name..." />
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </div>
 
-    <table class="student-table">
-        <thead>
-            <tr>
-                <th>LRN</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Registered Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        
-    <tbody id="studentTableBody">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>LRN</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
                 <?php
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
-                        echo "<td>" . $row['lrn'] . "</td>";
-                        echo "<td>" . $row['first_name'] . " " . $row['last_name'] . "</td>";
-                        echo "<td>" . $row['email'] . "</td>";
-                        echo "<td>" . $row['created_at'] . "</td>";
+                        echo "<td>" . htmlspecialchars($row['lrn']) . "</td>";
+                        echo "<td>" . htmlspecialchars(formatName($row['first_name'], $row['middle_name'], $row['last_name'])) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['created_at']) . "</td>";
                         echo "<td>
-                        <div class='action-buttons'>
-                            <button class='approve-btn' onclick='approveStudent(" . $row['id'] . ")'>Approve</button>
-                            <button class='reject-btn' onclick='rejectStudent(" . $row['id'] . ")'>Reject</button>
-                            <button class='view-btn' onclick='viewStudent(" . json_encode($row) . ")'>
-                                <ion-icon name='eye-outline'></ion-icon>
-                            </button>
-                        </div>
-                      </td>";
-                              
+                            <div class='action-buttons'>
+                                <button class='approve-btn' onclick='approveStudent(" . $row['id'] . ")'>Approve</button>
+                                <button class='reject-btn' onclick='rejectStudent(" . $row['id'] . ")'>Reject</button>
+                                <button class='view-btn' onclick='viewStudent(" . htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') . ")' title='View'>
+                                    <ion-icon name='eye-outline'></ion-icon>
+                                </button>
+                            </div>
+                        </td>";
                         echo "</tr>";
                     }
                 } else {
-                    echo "<tr><td colspan='5'>No pending students found.</td></tr>";
+                    echo "<tr><td colspan='5'>No pending students.</td></tr>";
                 }
                 ?>
             </tbody>
         </table>
-</div>
-
+    </div>
+    
 <!-- Modal for Student Details -->
 <div id="studentModal" class="modal">
     <div class="modal-content">
@@ -139,6 +155,10 @@ $result = $conn->query($sql);
                     <div class="form-column">
                         <label>Section:</label>
                         <input type="text" id="modalSection" readonly>
+                    </div>
+                    <div class="form-column">
+                        <label>Grade Level:</label>
+                        <input type="text" id="modalGradeLevel" readonly>
                     </div>
                     <div class="form-column">
                         <label>School Year:</label>
@@ -210,20 +230,38 @@ $result = $conn->query($sql);
 <!-- JavaScript for Search Functionality -->
 <script>
 function searchStudent() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.getElementById("studentTableBody");
-    tr = table.getElementsByTagName("tr");
+    const input = document.getElementById("searchInput").value.toUpperCase();
+    const rows = document.querySelectorAll("#studentTableBody tr");
 
-    for (i = 0; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td")[1]; // Search by student name
-        if (td) {
-            txtValue = td.textContent || td.innerText;
-            tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    let hasMatch = false;
+
+    rows.forEach(row => {
+        const lrn = row.querySelector("td:nth-child(1)")?.textContent.toUpperCase() || '';
+        const name = row.querySelector("td:nth-child(2)")?.textContent.toUpperCase() || '';
+
+        if (lrn.includes(input) || name.includes(input)) {
+            row.style.display = "";
+            hasMatch = true;
+        } else {
+            row.style.display = "none";
         }
+    });
+
+    const noDataRow = document.getElementById("noDataRow");
+    if (noDataRow) noDataRow.remove();
+
+    if (!hasMatch) {
+        const tbody = document.getElementById("studentTableBody");
+        const newRow = document.createElement("tr");
+        newRow.id = "noDataRow";
+        newRow.innerHTML = `<td colspan="5">No matching results.</td>`;
+        tbody.appendChild(newRow);
     }
 }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("searchInput").addEventListener("input", searchStudent);
+    });
 
     function approveStudent(studentId) {
         if (confirm("Are you sure you want to approve this student?")) {
@@ -237,12 +275,17 @@ function searchStudent() {
         }
     }
 
+function capitalizeFirstLetter(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
     function viewStudent(student) {
     console.log("Student ID Photo Path from DB: ", student.id_photo); // Debugging
 
-    document.getElementById("modalFirstName").value = student.first_name || "";
-    document.getElementById("modalMiddleName").value = student.middle_name || "";
-    document.getElementById("modalLastName").value = student.last_name || "";
+document.getElementById("modalFirstName").value = capitalizeFirstLetter(student.first_name);
+document.getElementById("modalMiddleName").value = capitalizeFirstLetter(student.middle_name);
+document.getElementById("modalLastName").value = capitalizeFirstLetter(student.last_name);
     document.getElementById("modalLRN").value = student.lrn || "";
     document.getElementById("modalDOB").value = student.date_of_birth || "";
     document.getElementById("modalGender").value = student.gender || "";
@@ -250,15 +293,14 @@ function searchStudent() {
     document.getElementById("modalAddress").value = student.address || "";
     document.getElementById("modalContact").value = student.contact_number || "";
     document.getElementById("modalEmail").value = student.email || "";
-    document.getElementById("modalSection").value = student.section || "";
+document.getElementById("modalSection").value = capitalizeFirstLetter(student.section);
+    document.getElementById("modalGradeLevel").value = student.grade_level || "";
     document.getElementById("modalSchoolYear").value = student.school_year || "";
     document.getElementById("modalStudentType").value = student.student_type || "";
-
     document.getElementById("modalGuardianName").value = student.guardian_name || "";
     document.getElementById("modalGuardianAddress").value = student.guardian_address || "";
     document.getElementById("modalGuardianContact").value = student.guardian_contact || "";
-    document.getElementById("modalGuardianRelationship").value = student.guardian_relationship || "";
-
+document.getElementById("modalGuardianRelationship").value = capitalizeFirstLetter(student.guardian_relationship);
     document.getElementById("modalElemSchool").value = student.elementary_school || "";
     document.getElementById("modalYearGraduated").value = student.year_graduated || "";
 
@@ -291,7 +333,7 @@ function searchStudent() {
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-    // Ensure modal is hidden when the page loads
+    // Hide modal initially
     document.getElementById("studentModal").style.display = "none";
 });
 

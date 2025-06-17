@@ -21,8 +21,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $address = trim($_POST['address']);
     $contact_number = trim($_POST['contact_number']);
     $email = trim($_POST['email']);
-    $section = isset($_POST['section']) ? trim($_POST['section']) : null;
+    $section = trim($_POST['section']);
     $school_year = trim($_POST['school_year']);
+    $grade_level = trim($_POST['grade_level']);
     $student_type = trim($_POST['student_type']);
     $guardian_name = trim($_POST['guardian_name']);
     $guardian_contact = trim($_POST['guardian_contact']);
@@ -32,20 +33,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $year_graduated = trim($_POST['year_graduated']);
     $created_at = date('Y-m-d H:i:s');
 
-    // Validate School Year Format (YYYY - YYYY)
-if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
-    $error = "Invalid school year format. Please use 'YYYY-YYYY'.";
-} else {
-    list($start_year, $end_year) = explode("-", $school_year);
-    if ($end_year != ($start_year + 4)) {
-        $error = "Invalid school year range. The end year must be 4 years after the start year.";
+    if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
+        $error = "Invalid school year format. Please use 'YYYY-YYYY'.";
+    } else {
+        list($start_year, $end_year) = explode("-", $school_year);
+        $start_year = (int)$start_year;
+        $end_year = (int)$end_year;
+
+        $expected_gap = 0;
+        if ($grade_level === "Grade 7") $expected_gap = 4;
+        elseif ($grade_level === "Grade 8") $expected_gap = 3;
+        elseif ($grade_level === "Grade 9") $expected_gap = 2;
+        elseif ($grade_level === "Grade 10") $expected_gap = 1;
+
+        if ($end_year != ($start_year + $expected_gap)) {
+            $error = "Invalid school year range for $grade_level. It must be $expected_gap years after the start year.";
+        }
     }
-}
 
-
-    // Prevent SQL execution if there's an error
     if (empty($error)) {
-        // Check if LRN or Email already exists in both tables
         $check_stmt = $conn->prepare("SELECT lrn, email FROM pending_students WHERE lrn = ? OR email = ? UNION SELECT lrn, email FROM students WHERE lrn = ? OR email = ?");
         $check_stmt->bind_param("ssss", $lrn, $email, $lrn, $email);
         $check_stmt->execute();
@@ -62,7 +68,6 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                 }
             }
         } else {
-            // File Upload Handling
             $valid_extensions = ["jpg", "jpeg", "png"];
             $uploaded_files = [];
 
@@ -85,24 +90,23 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                 }
             }
 
-            // If no errors, proceed with database insertion
             if (empty($error)) {
                 $stmt = $conn->prepare("INSERT INTO pending_students 
-                    (first_name, middle_name, last_name, lrn, date_of_birth, gender, citizenship, address, contact_number, email, section, school_year, student_type, guardian_name, guardian_contact, guardian_address, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    (first_name, middle_name, last_name, lrn, date_of_birth, gender, citizenship, address, contact_number, email, section, school_year, student_type, guardian_name, guardian_contact, guardian_address, guardian_relationship, elementary_school, year_graduated, birth_certificate, id_photo, good_moral, student_signature, created_at, grade_level) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 if (!$stmt) {
                     die("SQL Prepare Error: " . $conn->error);
                 }
 
-                $stmt->bind_param("ssssssssssssssssssssssss",
+                $stmt->bind_param("sssssssssssssssssssssssss",
                     $first_name, $middle_name, $last_name, $lrn, $date_of_birth, $gender,
                     $citizenship, $address, $contact_number, $email, $section, $school_year, $student_type,
                     $guardian_name, $guardian_contact, $guardian_address, $guardian_relationship, $elementary_school,
                     $year_graduated,
                     $uploaded_files['birth_certificate'], $uploaded_files['id_photo'],
                     $uploaded_files['good_moral'], $uploaded_files['student_signature'],
-                    $created_at
+                    $created_at, $grade_level
                 );
 
                 if ($stmt->execute()) {
@@ -183,6 +187,17 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                 <div class="col-md-4 mb-3">
                     <input type="text" name="section" class="form-control" placeholder="Section" required>
                 </div>
+
+                <div class="col-md-4 mb-3">
+                    <select name="grade_level" class="form-control" required>
+                        <option value="">Grade Level</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                    </select>
+                </div>
+
                 <div class="col-md-4 mb-3">
                     <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
                 </div>
@@ -190,7 +205,7 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
                     <select name="student_type" class="form-control" required>
                     <option value="">Student Type</option>
                     <option value="Regular Student">Regular Student</option>
-                    <option value="STI">STI</option>
+                    <option value="STI Student">STI Student</option>
                     </select>
                 </div>
             </div>
@@ -244,20 +259,31 @@ if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
         </form>
 
         <script>
-function updateSchoolYear() {
-    let inputField = document.getElementById('school_year');
-    let value = inputField.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            function autoUpdateSchoolYear() {
+                const grade = document.querySelector('[name="grade_level"]').value;
+                const yearInput = document.getElementById('school_year');
 
-    if (value.length >= 4) {
-        let startYear = value.substring(0, 4); // Get first 4 digits
-        let endYear = parseInt(startYear) + 4;
+                if (yearInput.value.length === 4 && !isNaN(yearInput.value)) {
+                    const start = parseInt(yearInput.value);
+                        let gap = 0;
 
-        if (!isNaN(startYear) && !isNaN(endYear)) {
-            inputField.value = startYear + "-" + endYear; // Format properly
-        }
-    }
-}
+                        if (grade === "Grade 7") gap = 4;
+                        else if (grade === "Grade 8") gap = 3;
+                        else if (grade === "Grade 9") gap = 2;
+                        else if (grade === "Grade 10") gap = 1;
+
+                        if (gap > 0) {
+                            yearInput.value = `${start}-${start + gap}`;
+                        }
+                    }
+                }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('[name="grade_level"]').addEventListener('change', autoUpdateSchoolYear);
+                document.getElementById('school_year').addEventListener('input', autoUpdateSchoolYear);
+                });
         </script>
+
 
     </div>
 </body>

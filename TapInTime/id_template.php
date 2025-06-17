@@ -37,8 +37,26 @@ if (!file_exists($id_photo_path)) {
     error_log("File not found: " . $id_photo_path);
 }
 
-// Guardian details
-$guardian_name = !empty($student['guardian_name']) ? htmlspecialchars($student['guardian_name']) : 'N/A';
+// Format guardian name
+function formatGuardianName($name) {
+    $nameParts = explode(" ", trim($name));
+    $first = isset($nameParts[0]) ? ucfirst(strtolower($nameParts[0])) : '';
+    $middle = isset($nameParts[1]) ? strtoupper(substr($nameParts[1], 0, 1)) . '.' : '';
+    $last = '';
+
+    // If more than 2 parts, combine the rest as last name
+    if (count($nameParts) > 2) {
+        for ($i = 2; $i < count($nameParts); $i++) {
+            $last .= ucfirst(strtolower($nameParts[$i])) . ' ';
+        }
+        $last = trim($last);
+    }
+
+    return trim("{$first} {$middle} {$last}");
+}
+
+$guardian_name_raw = !empty($student['guardian_name']) ? $student['guardian_name'] : '';
+$guardian_name = !empty($guardian_name_raw) ? htmlspecialchars(formatGuardianName($guardian_name_raw)) : 'N/A';
 $guardian_address = !empty($student['guardian_address']) ? htmlspecialchars($student['guardian_address']) : 'N/A';
 $guardian_contact = !empty($student['guardian_contact']) ? htmlspecialchars($student['guardian_contact']) : 'N/A';
 
@@ -63,16 +81,26 @@ $school_year = !empty($student['school_year']) ? htmlspecialchars($student['scho
         <div class="id-container">
             <img src="assets/id/id_f.jpg" class="background-img">
             <img id="modalIDPhoto" src="<?php echo $id_photo_path; ?>" class="id-photo">
-            <div class="student-name"><?php echo $full_name; ?></div>
-            <div class="student-lrn"><?php echo htmlspecialchars($lrn); ?></div>
-        </div>
+<div class="student-name-container">
+    <div class="student-name"><?php echo $full_name; ?></div>
+</div>
+<div class="student-lrn-container">
+    <div class="student-lrn"><?php echo htmlspecialchars($lrn); ?></div>
+</div>
+<div class="principal-container">
+    <div class="principal"></div>
+</div>
+</div>
 
         <!-- Back ID -->
 <div class="id-container">
     <img src="assets/id/id_b.jpg" class="background-img">
     
     <!-- School Year Section -->
+<div class="school-year-container">
     <div class="school-year"><?php echo $school_year; ?></div>
+</div>
+<div class="guardian-info-container">
     <div class="guardian-info">
         <div class="guardian-name"><?php echo $guardian_name; ?></div>
         <div class="guardian-address"><?php echo $guardian_address; ?></div>
@@ -86,22 +114,37 @@ $school_year = !empty($student['school_year']) ? htmlspecialchars($student['scho
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        function adjustFontSize(element, maxWidth, minFontSize) {
-            let fontSize = 20; // Default font size
-            element.style.fontSize = fontSize + "px";
+document.addEventListener("DOMContentLoaded", function () {
+    const container = document.querySelector('.student-name-container');
+    const name = document.querySelector('.student-name');
 
-            while (element.scrollWidth > maxWidth && fontSize > minFontSize) {
-                fontSize--; // Reduce font size if the text overflows
-                element.style.fontSize = fontSize + "px";
-            }
-        }
+    if (container && name) {
+        let fontSize = 20;
+        name.style.fontSize = fontSize + "px";
 
-        let nameElement = document.querySelector(".student-name");
-        if (nameElement) {
-            adjustFontSize(nameElement, 240, 12); // Ensure name fits in white space
+        // Adjust only if too wide
+        while ((name.scrollWidth > container.clientWidth) && fontSize > 8) {
+            fontSize -= 0.5;
+            name.style.fontSize = fontSize + "px";
         }
-    });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const nameEl = document.querySelector('.guardian-name');
+    const container = document.querySelector('.guardian-info-container');
+
+    if (nameEl && container) {
+        let fontSize = parseFloat(window.getComputedStyle(nameEl).fontSize);
+        const minFontSize = 10;
+
+        // Try to reduce font size to make it fit in 2 lines
+        while ((nameEl.scrollHeight > nameEl.offsetHeight || nameEl.scrollWidth > container.clientWidth) && fontSize > minFontSize) {
+            fontSize -= 0.5;
+            nameEl.style.fontSize = fontSize + "px";
+        }
+    }
+});
 </script>
 
 </body>

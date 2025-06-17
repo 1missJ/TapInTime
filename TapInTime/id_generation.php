@@ -1,137 +1,197 @@
+<?php
+// Include database connection
+include('db_connection.php');
+
+// Fetch the data including grade level and student type, ordered by section alphabetically
+$query = "SELECT section, grade_level, student_type, COUNT(*) AS student_count 
+          FROM students 
+          GROUP BY section, grade_level, student_type
+          ORDER BY section ASC";
+
+$result = mysqli_query($conn, $query);
+
+// Initialize the students array
+$students = [];
+
+// Check if any data was fetched
+if (mysqli_num_rows($result) > 0) {
+    $students = mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Verification - TapInTime</title>
+    <title>ID Generation</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/ids.css">
 </head>
+
 <body>
-    <!-- Include Sidebar -->
-    <?php include('sidebar.php'); ?>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <h2>ID Generation</h2>
+<?php include('sidebar.php'); ?>
 
-        <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search student...">
-            <button onclick="searchStudent()">Search</button>
+<div class="main-content">
+    <h2>ID Generation</h2>
+
+    <!-- Search Bar -->
+    <div class="search-container" style="display:none;">
+        <div class="left-search">
+            <form id="searchForm" onsubmit="return handleSearch(event)">
+                <input type="text" id="searchInput" placeholder="Search by section...">
+                <button type="submit">Search</button>
+            </form>
         </div>
+    </div>    
 
+    <!-- Grade Level and Student Type Dropdown -->
+    <div class="year-levels">
         <?php
-        // Include database connection
-        include 'db_connection.php';
+        $grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+        $types = ['Regular Student', 'STI Student'];
 
-        // Fetch student data from the database
-        $sql = "SELECT lrn, first_name, middle_name, last_name, email, created_at FROM students";
-        $result = mysqli_query($conn, $sql);
-
-        if (!$result) {
-            die("Query failed: " . mysqli_error($conn));
+        foreach ($grades as $grade) {
+            echo "<div class='year-box-wrapper'>
+                    <div class='year-box'>{$grade}</div>
+                    <div class='dropdown'>";
+            foreach ($types as $type) {
+                echo "<div onclick=\"showStudents('{$grade}', '{$type}')\">{$type}</div>";
+            }
+            echo "  </div>
+                </div>";
         }
         ?>
-
-        <table class="student-table">
-            <thead>
-                <tr>
-                    <th>LRN</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Registered Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="studentTableBody">
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <?php 
-                        // Combine first_name, middle_name, and last_name into "Name"
-                        $full_name = $row['first_name'] . ' ' . 
-                                    (!empty($row['middle_name']) ? $row['middle_name'] . ' ' : '') . 
-                                    $row['last_name']; 
-                    ?>
-                    <tr>
-                        <td><?php echo $row['lrn']; ?></td>
-                        <td><?php echo $full_name; ?></td>
-                        <td><?php echo $row['email']; ?></td>
-                        <td><?php echo $row['created_at']; ?></td>
-                        <td>
-                            <button class="generate-btn" data-lrn="<?php echo $row['lrn']; ?>">Generate</button>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
     </div>
 
-    <div id="idModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-body">
-            <div class="close-container">
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <iframe id="idFrame" style="width:100%; height:500px; border:none;"></iframe>
-        </div>
-    </div>
+    <!-- Student Table -->
+    <table class="student-table" id="studentTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Section</th>
+                <th>No. of Students</th>
+                <th>Student Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="studentTableBody">
+<?php
+if (!empty($students)) {
+    foreach ($students as $student) {
+        $sectionEscaped = htmlspecialchars(ucwords(strtolower($student['section'])));
+        $typeEscaped = htmlspecialchars($student['student_type']);
+        $sectionUrl = urlencode($student['section']);
+        echo "<tr data-grade='{$student['grade_level']}' data-type='{$student['student_type']}'>
+            <td>{$sectionEscaped}</td>
+            <td>{$student['student_count']}</td>
+            <td>{$typeEscaped}</td>
+            <td>
+                <button class='view-btn' title='View' onclick=\"location.href='id_generate.php?section={$sectionUrl}'\">
+                    <ion-icon name='eye-outline'></ion-icon>
+                </button>
+            </td>
+        </tr>";
+    }
+}
+?>
+        </tbody>
+    </table>
 </div>
 
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const generateButtons = document.querySelectorAll(".generate-btn");
-    const modal = document.getElementById("idModal");
-    const idFrame = document.getElementById("idFrame");
-    const closeBtn = document.querySelector(".close");
+<script>
+let currentGrade = "";
+let currentType = "";
 
-    generateButtons.forEach(button => {
-        button.addEventListener("click", function () {
-            let studentLRN = button.getAttribute("data-lrn");
-            if (studentLRN) {
-                idFrame.src = "id_template.php?lrn=" + studentLRN;
-                modal.style.display = "flex"; // Ensure the modal is visible
+function searchStudent() {
+    const input = document.getElementById("searchInput").value.toUpperCase();
+    const rows = document.querySelectorAll("#studentTableBody tr");
+
+    let hasMatch = false;
+
+    rows.forEach(row => {
+        if (row.id === "noDataRow") {
+            row.style.display = "none";
+            return;
+        }
+
+        const grade = row.getAttribute("data-grade")?.trim().toLowerCase();
+        const type = row.getAttribute("data-type")?.trim().toLowerCase();
+        const section = row.querySelector("td:nth-child(1)")?.textContent.toUpperCase() || "";
+
+        if (grade === currentGrade && type === currentType) {
+            if (section.includes(input)) {
+                row.style.display = "";
+                hasMatch = true;
             } else {
-                alert("LRN not found. Please try again.");
+                row.style.display = "none";
             }
-        });
-    });
-
-    // Close modal when clicking "X"
-    closeBtn.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
-
-    // Close modal when clicking outside of modal-content
-    window.addEventListener("click", function (event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
+        } else {
+            row.style.display = "none";
         }
     });
+
+    // Handle no match case
+    const tbody = document.getElementById("studentTableBody");
+    const existingNoDataRow = document.getElementById("noDataRow");
+    if (existingNoDataRow) existingNoDataRow.remove();
+
+    if (!hasMatch) {
+        const newRow = document.createElement("tr");
+        newRow.id = "noDataRow";
+        newRow.innerHTML = `<td colspan="4">No matching results.</td>`;
+        tbody.appendChild(newRow);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("searchInput").addEventListener("input", searchStudent);
 });
 
-        // Search Functionality
-        function searchStudent() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("searchInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("studentTableBody");
-            tr = table.getElementsByTagName("tr");
+function showStudents(yearLevel, studentType) {
+    currentGrade = yearLevel.trim().toLowerCase();
+    currentType = studentType.trim().toLowerCase();
 
-            for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[1]; // Search by student name
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-                }
-            }
+    document.querySelector(".year-levels").style.display = "none";
+    document.querySelector(".search-container").style.display = "flex";
+
+    const table = document.getElementById("studentTable");
+    const tbody = document.getElementById("studentTableBody");
+    const rows = tbody.querySelectorAll("tr");
+    table.style.display = "table";
+
+    let hasMatch = false;
+
+    const noDataRow = document.getElementById("noDataRow");
+    if (noDataRow) noDataRow.remove();
+
+    rows.forEach(row => {
+        const grade = row.getAttribute("data-grade")?.trim().toLowerCase();
+        const type = row.getAttribute("data-type")?.trim().toLowerCase();
+
+        if (grade === currentGrade && type === currentType) {
+            row.style.display = "";
+            hasMatch = true;
+        } else {
+            row.style.display = "none";
         }
-    </script>
+    });
 
-    <!-- Scripts -->
-    <script src="assets/js/main.js"></script>      
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    if (!hasMatch) {
+        const newRow = document.createElement("tr");
+        newRow.id = "noDataRow";
+        newRow.innerHTML = `<td colspan="4">No data available.</td>`;
+        tbody.appendChild(newRow);
+    }
+}
 
+
+function redirectToStudentInfo(section) {
+    window.location.href = `details_student.php?section=${encodeURIComponent(section)}`;
+}
+</script>
+
+<!-- Ionicons -->
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>

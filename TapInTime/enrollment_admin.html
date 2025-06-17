@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="navigation">
+            <ul>
+                <li class="brand-logo">
+                    <a href="#">
+                        <div class="logo-container">
+                            <img src="assets/imgs/logo.png">
+                        </div>
+                        <span class="title">TapTrack</span>
+                    </a>
+                </li>
+                <li><a href="dashboard.php"><span class="icon"><ion-icon name="home-outline"></ion-icon></span><span class="title">Dashboard</span></a></li>
+                <li><a href="student_verification.php"><span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span><span class="title">Student Verification</span></a></li>
+                <li><a href="student_details.php"><span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span><span class="title">Student Information</span></a></li>
+                <li><a href="id_generation.php"><span class="icon"><ion-icon name="card-outline"></ion-icon></span><span class="title">ID Generation with RFID</span></a></li>
+                <li><a href="faculty_registration.php"><span class="icon"><ion-icon name="school-outline"></ion-icon></span><span class="title">Faculty Registration</span></a></li>
+                <li><a href="subject_management.php"><span class="icon"><ion-icon name="library-outline"></ion-icon></span><span class="title">Subject Management</span></a></li>
+                <li style="display: none;"><a href="enrollment_admin.html"><span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span><span class="title">Enrollment</span></a></li>
+                <li><a href="attendance_monitoring.html"><span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span><span class="title">Attendance Monitoring</span></a></li>
+                <li><a href="student_promotion.php"><span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span><span class="title">Students Promotion</span></a></li>
+                <li><a href="user.php"><span class="icon"><ion-icon name="person-outline"></ion-icon></span><span class="title">Users</span></a></li>
+                <li><a href="index.php"><span class="icon"><ion-icon name="log-in-outline"></ion-icon></span><span class="title">Sign out</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Enrollment</h2>
+
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <div class="left-search">
+                <input type="text" id="searchInput" placeholder="Search by section..." onkeydown="handleKeyDown(event)">
+                <button onclick="searchStudent()">Search</button>
+            </div>
+        
+            <div class="right-filter" id="studentTypeFilterContainer" style="display:none;">
+                <select id="studentTypeFilter" onchange="filterByStudentType()">
+                    <option value="">Student Type</option>
+                    <option value="Regular Student">Regular Student</option>
+                    <option value="STI">STI</option>
+                </select>
+            </div>
+        </div>        
+
+        <!-- Year Level List -->
+        <div class="year-levels">
+            <div class="year-box" onclick="showStudents('Grade 7')">Grade 7</div>
+            <div class="year-box" onclick="showStudents('Grade 8')">Grade 8</div>
+            <div class="year-box" onclick="showStudents('Grade 9')">Grade 9</div>
+            <div class="year-box" onclick="showStudents('Grade 10')">Grade 10</div>
+        </div>
+
+        <!-- Student Table -->
+        <table class="student-table" id="studentTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Section</th>
+                    <th>Student Type</th>
+                    <th>No. of Students</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <tr data-grade="Grade 7" data-type="Regular Student">
+                    <td>Mabini</td>
+                    <td>Regular Student</td>
+                    <td>44</td>
+                    <td><button class="view-btn" onclick="location.href='enrolled_student.html?student_type=Regular%20Student'">
+                        <ion-icon name='eye-outline'></ion-icon>
+                    </button>                    
+                </tr>
+                <tr data-grade="Grade 7" data-type="STI">
+                    <td>Mangga</td>
+                    <td>STI</td>
+                    <td>36</td>
+                    <td><button class="view-btn" onclick="location.href='enrolled_student.html?student_type=STI'"><ion-icon name='eye-outline'></ion-icon></button></td>
+                </tr>
+            </tbody>            
+        </table>
+
+        <script>
+            function showStudents(yearLevel) {
+                // Hide the year level selection after a grade is clicked
+                document.querySelector(".year-levels").style.display = "none";
+                // Show the student table
+                document.getElementById("studentTable").style.display = "table";
+
+                // Show the search container
+                const searchContainer = document.getElementById("searchContainer");
+                searchContainer.style.display = "flex";  // Make search bar appear after grade level is clicked
+                
+                // Show the student type filter dropdown
+                const studentTypeFilterContainer = document.getElementById("studentTypeFilterContainer");
+                studentTypeFilterContainer.style.display = "block";  // Show filter dropdown
+                
+                // Optional: Filter by student type
+                filterByStudentType();
+            }
+
+            function filterByStudentType() {
+                const selectedType = document.getElementById("studentTypeFilter").value.toLowerCase();
+                const rows = document.querySelectorAll("#studentTableBody tr");
+
+                rows.forEach(row => {
+                    const rowType = (row.getAttribute("data-type") || "").toLowerCase();
+
+                    const isTypeMatch = !selectedType || rowType === selectedType;
+
+                    row.style.display = isTypeMatch ? "" : "none";
+                });
+            }
+
+            // Trigger search on Enter key
+            function handleKeyDown(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent form submission
+                    searchStudent();
+                }
+            }
+
+            // Handle the search functionality
+            function searchStudent() {
+                const query = document.getElementById("searchInput").value.toLowerCase();
+                const rows = document.querySelectorAll("#studentTableBody tr");
+
+                rows.forEach(row => {
+                    const section = (row.cells[0].textContent || "").toLowerCase();
+                    const matchesSearch = section.includes(query);
+
+                    row.style.display = matchesSearch ? "" : "none";
+                });
+            }
+        </script>
+    </div>
+
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>

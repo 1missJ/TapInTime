@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrolled Student Details</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+            <ul>
+                <li class="brand-logo">
+                    <a href="#">
+                        <div class="logo-container">
+                            <img src="assets/imgs/logo.png">
+                        </div>
+                        <span class="title">TapTrack</span>
+                    </a>
+                </li>                    
+                
+                <li>
+                    <a href="dashboard.php">
+                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                        <span class="title">Dashboard</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="student_verification.php">
+                        <span class="icon"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span>
+                        <span class="title">Student Verification</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="student_details.php">
+                        <span class="icon"><ion-icon name="people-circle-outline"></ion-icon> </span>
+                        <span class="title">Student Information</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="id_generation.php">
+                        <span class="icon"><ion-icon name="card-outline"></ion-icon></span>
+                        <span class="title">ID Generation with RFID</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="faculty_registration.php">
+                        <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
+                        <span class="title">Faculty Registration</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="subject_management.php">
+                        <span class="icon"><ion-icon name="library-outline"></ion-icon></span>
+                        <span class="title">Subject Management</span>
+                    </a>
+                </li>
+
+                <li style="display: none;">
+                    <a href="enrollment_admin.html">
+                        <span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span>
+                        <span class="title">Enrollment</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="attendance_monitoring.html">
+                        <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
+                        <span class="title">Attendance Monitoring</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="student_promotion.php">
+                        <span class="icon"><ion-icon name="ribbon-outline"></ion-icon></span>
+                        <span class="title">Students Promotion</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="user.php">
+                        <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                        <span class="title">Users</span>
+                    </a>
+                </li>
+    
+                <li>
+                    <a href="index.php">
+                        <span class="icon"><ion-icon name="log-in-outline"></ion-icon></span>
+                        <span class="title">Sign out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Enrolled Student List</h2>
+
+        <div class="search-container">
+            <div class="left-search">
+                <input type="text" id="searchInput" placeholder="Search by LRN or Name..." onkeydown="handleSearchEnter(event)">
+                <button onclick="searchStudent()">Search</button>
+            </div>
+        </div>
+
+        <!-- Student Table -->
+        <table class="student-table" id="studentTable">
+            <thead>
+                <tr>
+                    <th>LRN</th>
+                    <th>Name</th>
+                    <th>Student Type</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Dynamic student rows will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const regular_students = [
+            { lrn: "123456789120", name: "Emily Johnson", student_type: "Regular Student" },
+            { lrn: "453467890986", name: "Jane Smith", student_type: "Regular Student" },
+            { lrn: "78467890986", name: "John Doe", student_type: "Regular Student" },
+            { lrn: "775894020011", name: "Michael Lee", student_type: "Regular Student" },
+            { lrn: "567829304568", name: "Sarah Davis", student_type: "Regular Student" }
+        ];
+
+        const sti_students = [
+            { lrn: "123456789123", name: "Emily Johnson", student_type: "STI" },
+            { lrn: "453467890987", name: "Jane Smith", student_type: "STI" },
+            { lrn: "78467890987", name: "John Doe", student_type: "STI" },
+            { lrn: "775894020012", name: "Michael Lee", student_type: "STI" },
+            { lrn: "567829304569", name: "Sarah Davis", student_type: "STI" }
+        ];
+
+        // Function to display students based on the selected student type
+        function displayStudents() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentTypeFilter = urlParams.get('student_type');  // Capture student_type from the URL
+            const tableBody = document.getElementById("studentTableBody");
+            tableBody.innerHTML = "";  // Clear the table
+
+            let studentsToDisplay = [];
+
+            // Display only regular students if student_type=Regular Student
+            if (studentTypeFilter === "Regular Student") {
+                studentsToDisplay = regular_students;  // Only regular students
+            }
+            // Display only STI students if student_type=STI
+            else if (studentTypeFilter === "STI") {
+                studentsToDisplay = sti_students;  // Only STI students
+            }
+
+            // Add students to the table
+            studentsToDisplay.forEach(student => {
+                const row = document.createElement("tr");
+
+                const lrnCell = document.createElement("td");
+                lrnCell.textContent = student.lrn;
+                row.appendChild(lrnCell);
+
+                const nameCell = document.createElement("td");
+                nameCell.textContent = student.name;
+                row.appendChild(nameCell);
+
+                const studentTypeCell = document.createElement("td");
+                studentTypeCell.textContent = student.student_type;
+                row.appendChild(studentTypeCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to search by LRN or Name
+        function searchStudent() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#studentTableBody tr");
+
+            rows.forEach(row => {
+                const lrn = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+
+                if (lrn.includes(query) || name.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Function to handle Enter key press for search
+        function handleSearchEnter(event) {
+            if (event.key === 'Enter') {
+                searchStudent();
+            }
+        }
+
+        // Call displayStudents when the page loads
+        window.onload = displayStudents;
+    </script>
+
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
