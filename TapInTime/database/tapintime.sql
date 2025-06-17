@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 17, 2025 at 09:28 AM
+-- Generation Time: Jun 17, 2025 at 09:39 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -84,6 +84,33 @@ INSERT INTO `assign` (`id`, `teacher_id`, `subject_id`, `grade_level`, `section`
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `assigned_grade_subjects`
+--
+
+CREATE TABLE `assigned_grade_subjects` (
+  `id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `student_type` varchar(10) NOT NULL,
+  `grade_level` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `assigned_subjects`
+--
+
+CREATE TABLE `assigned_subjects` (
+  `id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `teacher_id` int(11) NOT NULL,
+  `student_type` enum('Regular','STI','Both') NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `enrollments`
 --
 
@@ -157,6 +184,18 @@ CREATE TABLE `pending_students` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `school_years`
+--
+
+CREATE TABLE `school_years` (
+  `id` int(11) NOT NULL,
+  `year` varchar(20) DEFAULT NULL,
+  `is_current` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `students`
 --
 
@@ -222,6 +261,18 @@ INSERT INTO `subjects` (`id`, `subject_name`, `student_type`, `created_at`) VALU
 (13, 'Mapeh', 'STI Student', '2025-06-13 01:52:57'),
 (14, 'P.e', 'Regular Student', '2025-06-13 03:37:39'),
 (15, 'PP', 'STI Student', '2025-06-13 03:40:23');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subject_teacher`
+--
+
+CREATE TABLE `subject_teacher` (
+  `id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `teacher_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
