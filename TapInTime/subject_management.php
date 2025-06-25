@@ -23,8 +23,10 @@ if (isset($_POST['ajax_check_section'])) {
     exit;
 }
 
+// AJAX: Check section grade level match
 if (isset($_POST['ajax_check_sections_grade'])) {
-    $sections = array_filter(array_map('trim', explode(',', $_POST['sections'])));
+    $sections = array_map('trim', explode(',', $_POST['sections']));
+    $gradeLevel = $_POST['grade_level'] ?? '';
     $missing = [];
     $mismatched = [];
 
@@ -35,13 +37,8 @@ if (isset($_POST['ajax_check_sections_grade'])) {
         $result = $stmt->get_result();
 
         if ($row = $result->fetch_assoc()) {
-            // Check against selected grade level from frontend (sent separately if needed)
-            $clientGrade = $_POST['grade_level'] ?? null;
-            if ($clientGrade !== null && $row['grade_level'] != $clientGrade) {
-                $mismatched[] = [
-                    'section' => $section,
-                    'grade_level' => $row['grade_level']
-                ];
+            if ($row['grade_level'] != $gradeLevel) {
+                $mismatched[] = ['section' => $section, 'grade_level' => $row['grade_level']];
             }
         } else {
             $missing[] = $section;
@@ -51,6 +48,7 @@ if (isset($_POST['ajax_check_sections_grade'])) {
     echo json_encode(['missing' => $missing, 'mismatched' => $mismatched]);
     exit;
 }
+
 
 // AJAX: Get student type of section
 if (isset($_POST['ajax_get_section_type'])) {
@@ -116,15 +114,15 @@ if (isset($_POST['assign_subject_modal'])) {
     $stmt->bind_param("s", $teacherName);
     $stmt->execute();
     $result = $stmt->get_result();
-
     if ($result->num_rows === 0) {
         echo "<script>alert('Teacher not found.'); window.history.back();</script>";
         exit;
     }
-
     $teacherId = $result->fetch_assoc()['id'];
+
     $validAssignments = [];
     $missingSubjects = [];
+    $gradeMismatchSections = [];
 
     foreach ($subjectNames as $subject) {
         // Get subject ID and student type
@@ -139,32 +137,59 @@ if (isset($_POST['assign_subject_modal'])) {
             $studentType = $subjectRow['student_type'];
 
             foreach ($sections as $section) {
-                // Check if already assigned
-                $check = $conn->prepare("SELECT id FROM assign WHERE teacher_id = ? AND subject_id = ? AND grade_level = ? AND section = ? AND student_type = ?");
-                $check->bind_param("iiiss", $teacherId, $subjectId, $gradeLevel, $section, $studentType);
-                $check->execute();
-                $exists = $check->get_result();
+                // ✅ Check section's real grade level
+                $secCheck = $conn->prepare("SELECT DISTINCT grade_level FROM students WHERE section = ?");
+                $secCheck->bind_param("s", $section);
+                $secCheck->execute();
+                $secResult = $secCheck->get_result();
 
-                if ($exists->num_rows === 0) {
-                    // Insert new assignment
-                    $insert = $conn->prepare("INSERT INTO assign (teacher_id, subject_id, grade_level, section, student_type) VALUES (?, ?, ?, ?, ?)");
-                    $insert->bind_param("iiiss", $teacherId, $subjectId, $gradeLevel, $section, $studentType);
-                    $insert->execute();
-                    $validAssignments[] = "$subject → $section";
-                }
+if ($secResult->num_rows > 0) {
+    $secRow = $secResult->fetch_assoc();
+
+    $actualGrade = preg_replace('/[^0-9]/', '', $secRow['grade_level']);
+    $inputGrade = preg_replace('/[^0-9]/', '', $gradeLevel);
+
+    if ($actualGrade !== $inputGrade) {
+        $gradeMismatchSections[] = "$section (actual: Grade " . $secRow['grade_level'] . ")";
+        continue;
+    }
+
+    // ✅ Only store if grade level matches
+    $check = $conn->prepare("SELECT id FROM assign WHERE teacher_id = ? AND subject_id = ? AND grade_level = ? AND section = ? AND student_type = ?");
+    $check->bind_param("iiiss", $teacherId, $subjectId, $gradeLevel, $section, $studentType);
+    $check->execute();
+    $exists = $check->get_result();
+
+    if ($exists->num_rows === 0) {
+        $insert = $conn->prepare("INSERT INTO assign (teacher_id, subject_id, grade_level, section, student_type) VALUES (?, ?, ?, ?, ?)");
+        $insert->bind_param("iiiss", $teacherId, $subjectId, $gradeLevel, $section, $studentType);
+        $insert->execute();
+        $validAssignments[] = "$subject → $section";
+    }
+
+} else {
+    $gradeMismatchSections[] = "$section (not found)";
+}
             }
         } else {
             $missingSubjects[] = $subject;
         }
     }
 
+    // Show alerts after processing
     if ($validAssignments) {
         echo "<script>alert('Assigned: " . implode(', ', $validAssignments) . " to $teacherName');</script>";
     }
+
+    if ($gradeMismatchSections) {
+        echo "<script>alert('Mismatch" . implode(', ', $gradeMismatchSections) . "');</script>";
+    }
+
     if ($missingSubjects) {
         echo "<script>alert('Missing subjects: " . implode(', ', $missingSubjects) . "');</script>";
     }
-    if (!$validAssignments && !$missingSubjects) {
+
+    if (!$validAssignments && !$gradeMismatchSections && !$missingSubjects) {
         echo "<script>alert('No new subjects assigned.');</script>";
     }
 }
@@ -201,12 +226,11 @@ if (isset($_POST['add_subject'])) {
     <form method="POST" action="">
       <label>Subject Names (comma separated):</label>
       <input type="text" name="subject_names" required />
-      <input type="hidden" name="student_type" id="assign_student_type" required />
                 <label>Student Type:</label>
                 <select name="student_type" required>
                     <option value="">-- Select Type --</option>
-                    <option value="Regular Student">Regular Student</option>
-                    <option value="STI Student">STI Student</option>
+                    <option value="JHS">JHS</option>
+                    <option value="SHS">SHS</option>
                     <option value="Both">Both</option>
                 </select>
       <input type="submit" name="add_subject" class="subject-btn" value="Add Subjects" />
@@ -239,34 +263,42 @@ if (isset($_POST['add_subject'])) {
     <?php
     include 'db_connection.php';
 
-    // Step 1: Get actual student types per section
+    // ✅ Step 1: Get all existing sections and their student types
     $sectionTypes = [];
     $sectionTypeQuery = $conn->query("SELECT section, student_type FROM students GROUP BY section, student_type");
     while ($row = $sectionTypeQuery->fetch_assoc()) {
-        $sectionTypes[$row['section']] = ucfirst($row['student_type']) . " Student";
+        $sectionTypes[$row['section']] = ucfirst($row['student_type']);
     }
 
-    // Step 2: Get teacher assignments
+    // ✅ Step 2: Only get assignments with valid sections (cross-checked in WHERE clause)
     $result = $conn->query("
-      SELECT 
-        faculty.name AS teacher_name,
-        assign.grade_level,
-        assign.section,
-        subjects.subject_name
-      FROM assign
-      JOIN faculty ON assign.teacher_id = faculty.id
-      JOIN subjects ON assign.subject_id = subjects.id
-      ORDER BY faculty.name, assign.grade_level, assign.section, subjects.subject_name
+SELECT 
+  faculty.name AS teacher_name,
+  students.grade_level AS actual_grade_level,
+  assign.section,
+  subjects.subject_name,
+  students.student_type
+FROM assign
+JOIN faculty ON assign.teacher_id = faculty.id
+JOIN subjects ON assign.subject_id = subjects.id
+JOIN students ON assign.section = students.section
+GROUP BY faculty.name, students.grade_level, assign.section, subjects.subject_name, students.student_type
+ORDER BY faculty.name, students.grade_level, assign.section, subjects.subject_name
     ");
 
     $assignments = [];
 
+    // ✅ Step 3: Organize assignments grouped by teacher → grade → section
     while ($row = $result->fetch_assoc()) {
         $teacher = $row['teacher_name'];
         $gradeLevel = $row['grade_level'];
         $section = $row['section'];
         $subject = $row['subject_name'];
-        $studentTypeLabel = $sectionTypes[$section] ?? 'Unknown Student';
+
+        // ✅ Skip if section not found in students table
+        if (!isset($sectionTypes[$section])) continue;
+
+        $studentTypeLabel = $sectionTypes[$section];
         $gradeGroup = "Grade $gradeLevel ($studentTypeLabel)";
 
         if (!in_array($subject, $assignments[$teacher][$gradeGroup][$section] ?? [])) {
@@ -274,7 +306,7 @@ if (isset($_POST['add_subject'])) {
         }
     }
 
-    // Step 3: Output
+    // ✅ Step 4: Output the cleaned and grouped data
     foreach ($assignments as $teacher => $gradeGroups) {
         echo "<tr class='teacher-row'><td><strong>$teacher</strong></td><td></td></tr>";
         foreach ($gradeGroups as $gradeGroup => $sections) {
@@ -288,6 +320,7 @@ if (isset($_POST['add_subject'])) {
     ?>
   </tbody>
 </table>
+
 </div>
 
 <!-- Assign Modal -->
@@ -320,17 +353,6 @@ if (isset($_POST['add_subject'])) {
         <label>Student Type:</label>
         <div id="subject_types_display" style="margin-top: 5px; font-size: 14px; color: #444;"></div>
       </div>
-
-      <div class="form-group">
-                <label for="grade_level">Select Grade Level:</label>
-                <select name="grade_level" required>
-                    <option value="">-- Select Grade --</option>
-                    <option value="7">Grade 7</option>
-                    <option value="8">Grade 8</option>
-                    <option value="9">Grade 9</option>
-                    <option value="10">Grade 10</option>
-                </select>
-</div>
 
       <button type="submit" name="assign_subject_modal">Confirm</button>
     </form>
@@ -401,6 +423,7 @@ window.addEventListener("click", function (event) {
   }
 });
 
+
 document.getElementById("teacher_name").addEventListener("blur", function () {
   const name = this.value.trim();
   const errorDiv = document.getElementById("teacher_error");
@@ -431,6 +454,7 @@ document.getElementById("section").addEventListener("blur", function () {
   const body = new URLSearchParams();
   body.append("ajax_check_sections_grade", "1");
   body.append("sections", sectionsRaw);
+  body.append("grade_level", gradeLevel);
 
   fetch("subject_management.php", {
     method: "POST",
@@ -440,18 +464,21 @@ document.getElementById("section").addEventListener("blur", function () {
     .then(res => res.json())
     .then(data => {
       if (data.missing.length > 0) {
-        errorDiv.textContent = `Section not found in the database: ${data.missing.join(", ")}`;
+        errorDiv.innerHTML = `Section not found: ${data.missing.join(", ")}`;
       } else if (data.mismatched.length > 0) {
-        errorDiv.innerHTML = data.mismatched.map(item => `${item.section} is in Grade ${item.grade_level}`).join("<br>");
+        errorDiv.innerHTML = data.mismatched
+          .map(item => `${item.section} is in ${item.grade_level}`)
+          .join("<br>");
       } else {
-        errorDiv.textContent = "";
+        errorDiv.textContent = ""; // ✅ Clear error if all match
       }
     })
     .catch(err => {
       console.error("Fetch error:", err);
-      errorDiv.textContent = "Error checking sections.";
+      errorDiv.textContent = "Error validating section.";
     });
 });
+
 
 document.getElementById("subject_names").addEventListener("input", function () {
     const subjectInput = this.value;

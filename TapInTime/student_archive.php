@@ -4,14 +4,12 @@ include('db_connection.php');
 // Get filters from GET parameters
 $section = isset($_GET['section']) ? $_GET['section'] : '';
 $grade_level = isset($_GET['grade_level']) ? $_GET['grade_level'] : '';
-$student_type = isset($_GET['student_type']) ? $_GET['student_type'] : '';
 
 // Escape values
 $sectionEscaped = mysqli_real_escape_string($conn, $section);
 $gradeLevelEscaped = mysqli_real_escape_string($conn, $grade_level);
-$studentTypeEscaped = mysqli_real_escape_string($conn, $student_type);
 
-// Fetch students from archive
+// Fetch students from archive WITHOUT student_type filtering
 $query = "
     SELECT 
         lrn,
@@ -22,7 +20,6 @@ $query = "
     FROM archived_students
     WHERE section = '$sectionEscaped'
       AND grade_level = '$gradeLevelEscaped'
-      AND student_type = '$studentTypeEscaped'
     ORDER BY last_name, first_name, middle_name
 ";
 

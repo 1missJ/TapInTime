@@ -117,38 +117,48 @@ $recent_query = $conn->query("
 
     <div class="dashboard-cards">
 
-        <div class="card" style="background-color: #fff3cd; color: #856404;">
+    <a href="student_verification.php" style="text-decoration: none;">
+        <div class="card" style="background-color: #fff3cd; color: #856404; cursor: pointer;">
             <ion-icon name="person-add-outline"></ion-icon>
             <div>
                 <h3>Pending Students</h3>
                 <p><?= htmlspecialchars($pending_students_count) ?></p>
             </div>
         </div>
+    </a>
 
-        <div class="card" style="background-color: #f8d7da; color: #721c24;">
+    <a href="id_generation.php" style="text-decoration: none;">
+        <div class="card" style="background-color: #f8d7da; color: #721c24; cursor: pointer;">
             <ion-icon name="card-outline"></ion-icon>
             <div>
                 <h3>Unassigned RFID</h3>
                 <p><?= htmlspecialchars($unassigned_rfid_count) ?></p>
             </div>
         </div>
+    </a>
 
-        <div class="card teachers-card">
+    <a href="faculty_registration.php" style="text-decoration: none;">
+        <div class="card teachers-card" style="cursor: pointer;">
             <ion-icon name="people-outline"></ion-icon>
             <div>
                 <h3>Total Teachers</h3>
                 <p><?= htmlspecialchars($teacher_count) ?></p>
             </div>
         </div>
+    </a>
 
-        <div class="card students-card">
+    <a href="student_details.php" style="text-decoration: none;">
+        <div class="card students-card" style="cursor: pointer;">
             <ion-icon name="school-outline"></ion-icon>
             <div>
                 <h3>Total Students</h3>
                 <p><?= htmlspecialchars($student_count) ?></p>
             </div>
         </div>
-    </div>
+    </a>
+
+</div>
+
 
     <div style="background: #fff; padding: 20px; margin-bottom: 30px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.06);">
         <h2 style="margin-bottom: 15px; color: #444;">📊 Attendance Rate This Week</h2>

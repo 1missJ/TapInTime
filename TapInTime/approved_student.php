@@ -4,7 +4,7 @@ include 'db_connection.php'; // Ensure DB connection is included
 if (isset($_GET['id'])) {
     $studentId = $_GET['id'];
 
-    // Get student data from pending_students, including grade_level
+    // Get student data from pending_students
     $query = "SELECT * FROM pending_students WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $studentId);
@@ -14,9 +14,24 @@ if (isset($_GET['id'])) {
 
     if ($student) {
         // Check if required fields are fetched
-        if (empty($student['section']) || empty($student['school_year']) || empty($student['guardian_address']) || empty($student['grade_level'])) {
+        if (
+            empty($student['section']) || 
+            empty($student['school_year']) || 
+            empty($student['guardian_address']) || 
+            empty($student['grade_level'])
+        ) {
             echo "<script>alert('Error: Some required fields are missing for this student.'); window.location.href='student_verification.php';</script>";
             exit();
+        }
+
+        // Automatically determine student_type based on grade_level
+        $gradeLevel = strtoupper(trim($student['grade_level'])); // Ensure consistent format
+        $studentType = '';
+
+        if (in_array($gradeLevel, ['GRADE 7', 'GRADE 8', 'GRADE 9', 'GRADE 10'])) {
+            $studentType = 'JHS';
+        } elseif (in_array($gradeLevel, ['GRADE 11', 'GRADE 12'])) {
+            $studentType = 'SHS';
         }
 
         // Insert into students table
@@ -28,32 +43,32 @@ if (isset($_GET['id'])) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $insertStmt = $conn->prepare($insertQuery);
-        $insertStmt->bind_param("ssssssssssssssssssssssss", 
-            $student['lrn'], 
-            $student['first_name'], 
-            $student['middle_name'], 
-            $student['last_name'],
-            $student['email'], 
-            $student['section'],
-            $student['school_year'],
-            $student['grade_level'],
-            $student['student_type'],  
-            $student['date_of_birth'], 
-            $student['gender'], 
-            $student['citizenship'],
-            $student['address'], 
-            $student['contact_number'], 
-            $student['guardian_name'], 
-            $student['guardian_contact'],
-            $student['guardian_relationship'], 
-            $student['guardian_address'],
-            $student['elementary_school'], 
-            $student['year_graduated'], 
-            $student['birth_certificate'], 
-            $student['id_photo'], 
-            $student['good_moral'], 
-            $student['student_signature']
-        );
+$insertStmt->bind_param("ssssssssssssssssssssssss", 
+    $student['lrn'], 
+    $student['first_name'], 
+    $student['middle_name'], 
+    $student['last_name'],
+    $student['email'], 
+    $student['section'],
+    $student['school_year'],
+    $student['grade_level'],
+    $studentType, // ✅ use this, not $student['student_type']
+    $student['date_of_birth'], 
+    $student['gender'], 
+    $student['citizenship'],
+    $student['address'], 
+    $student['contact_number'], 
+    $student['guardian_name'], 
+    $student['guardian_contact'],
+    $student['guardian_relationship'], 
+    $student['guardian_address'],
+    $student['elementary_school'], 
+    $student['year_graduated'], 
+    $student['birth_certificate'], 
+    $student['id_photo'], 
+    $student['good_moral'], 
+    $student['student_signature']
+);
 
         if ($insertStmt->execute()) {
             // Delete from pending_students

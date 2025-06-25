@@ -1,19 +1,15 @@
 <?php
-// Include database connection
 include('db_connection.php');
 
-// Fetch the data including grade level and student type
-$query = "SELECT section, grade_level, student_type, COUNT(*) AS student_count 
+$query = "SELECT section, grade_level, COUNT(*) AS student_count 
           FROM students 
-          GROUP BY section, grade_level, student_type
+          GROUP BY section, grade_level
           ORDER BY section ASC";
 
 $result = mysqli_query($conn, $query);
 
-// Initialize the students array
 $students = [];
 
-// Check if any data was fetched
 if (mysqli_num_rows($result) > 0) {
     $students = mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
@@ -23,8 +19,6 @@ if (mysqli_num_rows($result) > 0) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Information</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -45,21 +39,15 @@ if (mysqli_num_rows($result) > 0) {
         </div>
     </div>    
 
-    <!-- Grade Level and Student Type Dropdown -->
+    <!-- Grade Level Boxes Only -->
     <div class="year-levels">
         <?php
-        $grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
-        $types = ['Regular Student', 'STI Student'];
+        $grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
         foreach ($grades as $grade) {
             echo "<div class='year-box-wrapper'>
-                    <div class='year-box'>{$grade}</div>
-                    <div class='dropdown'>";
-            foreach ($types as $type) {
-                echo "<div onclick=\"showStudents('{$grade}', '{$type}')\">{$type}</div>";
-            }
-            echo "  </div>
-                </div>";
+                    <div class='year-box' onclick=\"showStudents('{$grade}')\">{$grade}</div>
+                  </div>";
         }
         ?>
     </div>
@@ -70,47 +58,44 @@ if (mysqli_num_rows($result) > 0) {
             <tr>
                 <th>Section</th>
                 <th>No. of Students</th>
-                <th>Student Type</th>
                 <th class="actions-header" style="position: relative;">
-  <div class="header-content">
-    <span>Actions</span>
-    <ion-icon name="ellipsis-vertical-outline" class="header-icon" id="headerDropdownToggle"></ion-icon>
-  </div>
-  
-  <!-- Dropdown menu -->
-  <div id="headerDropdownMenu" class="dropdown-menu">
-    <div class="dropdown-item" onclick="archiveAll()">Archive</div>
-  </div>
-</th>
+                    <div class="header-content">
+                        <span>Actions</span>
+                        <ion-icon name="ellipsis-vertical-outline" class="header-icon" id="headerDropdownToggle"></ion-icon>
+                    </div>
+                    <div id="headerDropdownMenu" class="dropdown-menu">
+                        <div class="dropdown-item" onclick="archiveAll()">Archive</div>
+                    </div>
+                </th>
             </tr>
         </thead>
-
-<tbody id="studentTableBody">
-<?php
-if (!empty($students)) {
-    foreach ($students as $student) {
-        $sectionFormatted = ucwords(strtolower($student['section']));
-        $sectionUrl = urlencode($student['section']);
-        echo "<tr data-grade='" . strtolower($student['grade_level']) . "' data-type='" . strtolower($student['student_type']) . "'>
-                <td>{$sectionFormatted}</td>
-                <td>{$student['student_count']}</td>
-                <td>{$student['student_type']}</td>
-                <td>
-                    <button class='view-btn' title='View' onclick=\"location.href='details_student.php?section={$sectionUrl}'\">
-                        <ion-icon name='eye-outline'></ion-icon>
-                    </button>
-                </td>
-              </tr>";
-    }
-} else {
-    echo "<tr id='noDataRow'><td colspan='4'>No data available.</td></tr>";
-}
-?>
-</tbody>
-        </table>
-    </div>
+        <tbody id="studentTableBody">
+            <?php
+            if (!empty($students)) {
+                foreach ($students as $student) {
+                    $sectionFormatted = ucwords(strtolower($student['section']));
+                    $sectionUrl = urlencode($student['section']);
+                    echo "<tr data-grade='" . strtolower($student['grade_level']) . "'>
+                            <td>{$sectionFormatted}</td>
+                            <td>{$student['student_count']}</td>
+                            <td>
+<button class='view-btn' title='View' onclick=\"location.href='details_student.php?grade_level=" . urlencode($student['grade_level']) . "&section={$sectionUrl}'\">
+                                    <ion-icon name='eye-outline'></ion-icon>
+                                </button>
+                            </td>
+                          </tr>";
+                }
+            } else {
+                echo "<tr id='noDataRow'><td colspan='3'>No data available.</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
 <script>
+let currentGrade = "";
+
 function searchStudent() {
     const input = document.getElementById("searchInput").value.toUpperCase();
     const rows = document.querySelectorAll("#studentTableBody tr");
@@ -119,16 +104,14 @@ function searchStudent() {
 
     rows.forEach(row => {
         if (row.id === "noDataRow") {
-            // Hide the no data row initially during filtering
             row.style.display = "none";
             return;
         }
 
         const grade = row.getAttribute("data-grade")?.trim().toLowerCase();
-        const type = row.getAttribute("data-type")?.trim().toLowerCase();
         const section = row.querySelector("td:nth-child(1)")?.textContent.toUpperCase() || "";
 
-        if (grade === currentGrade && type === currentType) {
+        if (grade === currentGrade) {
             if (section.includes(input)) {
                 row.style.display = "";
                 hasMatch = true;
@@ -140,28 +123,26 @@ function searchStudent() {
         }
     });
 
-    // Remove any existing no data row to avoid duplicates
     const existingNoDataRow = document.getElementById("noDataRow");
     if (existingNoDataRow) existingNoDataRow.remove();
 
-if (!hasMatch) {
-    const tbody = document.getElementById("studentTableBody");
-    const hasAnyData = Array.from(rows).some(row =>
-        row.id !== "noDataRow" &&
-        row.getAttribute("data-grade") === currentGrade &&
-        row.getAttribute("data-type") === currentType
-    );
+    if (!hasMatch) {
+        const tbody = document.getElementById("studentTableBody");
 
-    const newRow = document.createElement("tr");
-    newRow.id = "noDataRow";
-    newRow.innerHTML = `<td colspan='4'>${hasAnyData ? "No matching results." : "No data available."}</td>`;
-    tbody.appendChild(newRow);
+        const hasAnyData = Array.from(rows).some(row =>
+            row.id !== "noDataRow" &&
+            row.getAttribute("data-grade") === currentGrade
+        );
+
+        const newRow = document.createElement("tr");
+        newRow.id = "noDataRow";
+        newRow.innerHTML = `<td colspan='3'>${hasAnyData ? "No matching results." : "No data available."}</td>`;
+        tbody.appendChild(newRow);
     }
 }
 
-function showStudents(yearLevel, studentType) {
+function showStudents(yearLevel) {
     currentGrade = yearLevel.trim().toLowerCase();
-    currentType = studentType.trim().toLowerCase();
 
     document.querySelector(".year-levels").style.display = "none";
     document.querySelector(".search-container").style.display = "flex";
@@ -176,50 +157,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("searchInput").addEventListener("input", searchStudent);
 });
 
-function redirectToStudentInfo(section) {
-    window.location.href = `details_student.php?section=${encodeURIComponent(section)}`;
+function archiveAll() {
+    window.location.href = 'archive_students.php';
 }
 
-function archiveStudent(lrn) {
-    if (!confirm(`Are you sure you want to archive student LRN: ${lrn}?`)) return;
-
-    fetch('archive_student_action.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `lrn=${encodeURIComponent(lrn)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Student archived successfully!');
-            location.reload(); // Reload page to update list
-        } else {
-            alert('Error archiving student: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        alert('Request failed: ' + error);
-    });
-}
-
-    const dropdownToggle = document.getElementById('headerDropdownToggle');
+const dropdownToggle = document.getElementById('headerDropdownToggle');
 const dropdownMenu = document.getElementById('headerDropdownMenu');
 
 dropdownToggle.addEventListener('click', function(event) {
-  event.stopPropagation(); // Prevent event bubbling
-  dropdownMenu.style.display = (dropdownMenu.style.display === 'block') ? 'none' : 'block';
+    event.stopPropagation();
+    dropdownMenu.style.display = (dropdownMenu.style.display === 'block') ? 'none' : 'block';
 });
 
-// Hide dropdown if click outside
 document.addEventListener('click', function() {
-  dropdownMenu.style.display = 'none';
+    dropdownMenu.style.display = 'none';
 });
-
-function archiveAll() {
-  window.location.href = 'archive_students.php';
-}
 </script>
 
 <!-- Ionicons -->

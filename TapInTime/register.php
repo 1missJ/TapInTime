@@ -24,7 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $section = trim($_POST['section']);
     $school_year = trim($_POST['school_year']);
     $grade_level = trim($_POST['grade_level']);
-    $student_type = trim($_POST['student_type']);
     $guardian_name = trim($_POST['guardian_name']);
     $guardian_contact = trim($_POST['guardian_contact']);
     $guardian_address = trim($_POST['guardian_address']);
@@ -32,6 +31,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $elementary_school = trim($_POST['elementary_school']);
     $year_graduated = trim($_POST['year_graduated']);
     $created_at = date('Y-m-d H:i:s');
+
+    if (in_array($grade_level, ["Grade 7", "Grade 8", "Grade 9", "Grade 10"])) {
+    $student_type = "JHS";
+} elseif (in_array($grade_level, ["Grade 11", "Grade 12"])) {
+    $student_type = "SHS";
+}
 
     if (!preg_match('/^\d{4}-\d{4}$/', $school_year)) {
         $error = "Invalid school year format. Please use 'YYYY-YYYY'.";
@@ -45,6 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
         elseif ($grade_level === "Grade 8") $expected_gap = 3;
         elseif ($grade_level === "Grade 9") $expected_gap = 2;
         elseif ($grade_level === "Grade 10") $expected_gap = 1;
+        elseif ($grade_level === "Grade 11") $expected_gap = 2;
+        elseif ($grade_level === "Grade 12") $expected_gap = 1;
 
         if ($end_year != ($start_year + $expected_gap)) {
             $error = "Invalid school year range for $grade_level. It must be $expected_gap years after the start year.";
@@ -195,18 +202,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
                         <option value="Grade 8">Grade 8</option>
                         <option value="Grade 9">Grade 9</option>
                         <option value="Grade 10">Grade 10</option>
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
                     </select>
                 </div>
 
                 <div class="col-md-4 mb-3">
                     <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <select name="student_type" class="form-control" required>
-                    <option value="">Student Type</option>
-                    <option value="Regular Student">Regular Student</option>
-                    <option value="STI Student">STI Student</option>
-                    </select>
                 </div>
             </div>
 
@@ -271,6 +273,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
                         else if (grade === "Grade 8") gap = 3;
                         else if (grade === "Grade 9") gap = 2;
                         else if (grade === "Grade 10") gap = 1;
+                        else if (grade === "Grade 11") gap = 2;
+                        else if (grade === "Grade 12") gap = 1;
 
                         if (gap > 0) {
                             yearInput.value = `${start}-${start + gap}`;
