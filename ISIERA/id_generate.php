@@ -56,19 +56,41 @@ function capitalizeNamePart($name) {
     <meta charset="UTF-8" />
     <title>ID Generation</title>
     <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="stylesheet" href="assets/css/ids.css" />
+    <link rel="stylesheet" href="assets/css/id_template.css" />
     <link rel="stylesheet" href="assets/css/rfid.css" />
+    <style>
+    .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .tooltip {
+        position: absolute;
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-top: 5px;
+        z-index: 1;
+        display: none;
+    }
+    
+    .generate-btn:hover + .tooltip {
+        display: block;
+    }
+</style>
 </head>
 <body>
 
 <?php include('sidebar.php'); ?>
 
 <div class="main-content">
-    <h2>ID Generation</h2>
+    <h2>Student List</h2>
 
     <div class="search-container">
         <form id="searchForm" onsubmit="return handleSearch(event)">
-            <input type="text" id="searchInput" placeholder="Search by LRN and Name...">
+            <input type="text" id="searchInput" placeholder="Search by LRN or Name...">
             <button type="submit">Search</button>
         </form>
     </div>
@@ -93,7 +115,7 @@ function capitalizeNamePart($name) {
                         $middleInitial = $row['middle_name'] ? strtoupper(mb_substr($row['middle_name'], 0, 1)) . '.' : '';
                         $full_name = "$lastName, $firstName" . ($middleInitial ? " $middleInitial" : '');
                     ?>
-                    <tr>
+                    <tr class="student-row">
                         <td><?= htmlspecialchars($row['lrn']) ?></td>
                         <td><?= htmlspecialchars($full_name) ?></td>
                         <td><?= htmlspecialchars($row['email']) ?></td>
@@ -105,12 +127,17 @@ function capitalizeNamePart($name) {
                         </td>
                         <td><?= htmlspecialchars($row['created_at']) ?></td>
                         <td>
-                            <button class="generate-btn" data-lrn="<?= htmlspecialchars($row['lrn']) ?>">Generate</button>
+                            <?php if (!empty($row['rfid'])): ?>
+                                <button class="generate-btn" data-lrn="<?= htmlspecialchars($row['lrn']) ?>">Generate</button>
+                            <?php else: ?>
+                                <button class="generate-btn disabled" disabled title="ID Print">Generate</button>
+                                <div class="tooltip">RFID must be assigned first</div>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
-                <tr><td colspan="6">No data available.</td></tr>
+                <tr id="noDataRow" class="no-results-row"><td colspan="6">No data available.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
@@ -124,7 +151,7 @@ function capitalizeNamePart($name) {
         <form id="rfidForm">
             <input type="hidden" id="rfidLRN">
             <label for="rfidInput">RFID Number:</label>
-            <input type="text" id="rfidInput" required>
+            <input type="text" id="rfidInput" required pattern="\d{10,12}" title="Please enter 10 to 12 digits only" maxlength="12" inputmode="numeric">
             <button type="submit">Save RFID</button>
         </form>
     </div>
@@ -139,6 +166,7 @@ function capitalizeNamePart($name) {
 </div>
 
 <script>
+// Search functionality
 function handleSearch(event) {
     event.preventDefault();
     searchStudent();
@@ -146,19 +174,69 @@ function handleSearch(event) {
 }
 
 function searchStudent() {
-    const input = document.getElementById("searchInput").value.toUpperCase();
-    const rows = document.querySelectorAll("#studentTableBody tr");
-
+    const input = document.getElementById("searchInput").value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#studentTableBody .student-row");
+    let hasMatch = false;
+    
+    // First, show all rows if search is empty
+    if (input === "") {
+        rows.forEach(row => {
+            row.style.display = "";
+        });
+        
+        // Show/hide the initial no data row
+        const noDataRow = document.getElementById("noDataRow");
+        if (noDataRow) {
+            noDataRow.style.display = rows.length === 0 ? "" : "none";
+        }
+        
+        // Remove any no match row if it exists
+        const noMatchRow = document.getElementById("noMatchRow");
+        if (noMatchRow) noMatchRow.remove();
+        
+        return;
+    }
+    
+    // Search through rows
     rows.forEach(row => {
-        const lrn = row.querySelector("td:nth-child(1)")?.textContent.toUpperCase() || '';
-        const name = row.querySelector("td:nth-child(2)")?.textContent.toUpperCase() || '';
-        row.style.display = (lrn.includes(input) || name.includes(input)) ? "" : "none";
+        const lrn = row.querySelector("td:nth-child(1)")?.textContent.toLowerCase() || '';
+        const name = row.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || '';
+        const email = row.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || '';
+        
+        if (lrn.includes(input) || name.includes(input) || email.includes(input)) {
+            row.style.display = "";
+            hasMatch = true;
+        } else {
+            row.style.display = "none";
+        }
     });
+    
+    // Handle no results
+    const tbody = document.getElementById("studentTableBody");
+    const noMatchRow = document.getElementById("noMatchRow");
+    const noDataRow = document.getElementById("noDataRow");
+    
+    if (noMatchRow) noMatchRow.remove();
+    
+    if (!hasMatch) {
+        // Hide the initial no data row if it exists
+        if (noDataRow) noDataRow.style.display = "none";
+        
+        // Create or show no match row
+        if (rows.length > 0) {
+            const newRow = document.createElement("tr");
+            newRow.id = "noMatchRow";
+            newRow.className = "no-results-row";
+            newRow.innerHTML = `<td colspan="6">No matching results.</td>`;
+            tbody.appendChild(newRow);
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Initialize search functionality
     document.getElementById("searchInput").addEventListener("input", searchStudent);
-
+    
     // Generate ID Modal
     const generateButtons = document.querySelectorAll(".generate-btn");
     const modal = document.getElementById("idModal");
@@ -167,7 +245,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     generateButtons.forEach(button => {
         button.addEventListener("click", function () {
+            if (this.classList.contains("disabled")) {
+                alert("RFID must be assigned first before generating an ID.");
+                return;
+            }
+
             const lrn = this.getAttribute("data-lrn");
+            const rfidValue = document.querySelector(`.rfid-value[data-lrn="${lrn}"]`).textContent.trim();
+            
+            if (!rfidValue || rfidValue === 'Not Assigned') {
+                alert("RFID must be assigned first before generating an ID.");
+                return;
+            }
+            
             if (lrn) {
                 idFrame.src = "id_template.php?lrn=" + lrn;
                 modal.style.display = "flex";
@@ -189,28 +279,48 @@ document.addEventListener("DOMContentLoaded", function () {
     editButtons.forEach(button => {
         button.addEventListener("click", function () {
             const lrn = this.getAttribute("data-lrn");
-            const rfidCell = this.previousElementSibling.textContent.trim();
+            const rfidCell = this.parentElement.querySelector(".rfid-value").textContent.trim();
             rfidInput.value = (rfidCell !== 'Not Assigned') ? rfidCell : '';
             rfidLRN.value = lrn;
             rfidModal.style.display = "flex";
         });
     });
 
+    // RFID Form Submit
     document.getElementById("rfidForm").addEventListener("submit", function (e) {
         e.preventDefault();
         const lrn = rfidLRN.value;
-        const rfid = rfidInput.value;
+        const rfid = rfidInput.value.trim();
+
+        if (!/^\d{10,12}$/.test(rfid)) {
+            alert("RFID must be a numeric value with 10 to 12 digits only.");
+            return;
+        }
 
         fetch("update_rfid.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `lrn=${lrn}&rfid=${rfid}`
+            body: `lrn=${encodeURIComponent(lrn)}&rfid=${encodeURIComponent(rfid)}`
         })
         .then(response => response.text())
         .then(result => {
             if (result === "success") {
                 document.querySelector(`.rfid-value[data-lrn="${lrn}"]`).textContent = rfid;
                 closeRfidModal();
+                
+                // Enable generate button if it was disabled
+                const generateBtn = document.querySelector(`.generate-btn[data-lrn="${lrn}"]`);
+                if (generateBtn) {
+                    generateBtn.classList.remove("disabled");
+                    generateBtn.disabled = false;
+                    generateBtn.title = "";
+                    
+                    // Remove tooltip if exists
+                    const tooltip = generateBtn.nextElementSibling;
+                    if (tooltip && tooltip.classList.contains("tooltip")) {
+                        tooltip.remove();
+                    }
+                }
             } else {
                 alert("Failed to update RFID.");
             }

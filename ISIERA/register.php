@@ -2,6 +2,11 @@
 session_start();
 include 'db_connection.php';
 
+// Clear form data if coming from a redirect (back button)
+if (!isset($_POST['submit'])) {  // Fixed: Added missing closing parenthesis
+    $_POST = array();
+    $_FILES = array();
+}
 
 $error = "";
 $success = "";
@@ -149,7 +154,6 @@ if (isset($_GET['grade_level'])) {
 
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,37 +161,55 @@ if (isset($_GET['grade_level'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Registration</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        /* Minimal mobile-specific adjustments */
+        .form-control, .btn {
+            min-height: 44px; /* Better touch target size for mobile */
+        }
+        
+        /* Prevent zoom on iOS when focusing inputs */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-3 mt-md-5">
         <h2 class="text-center">Student Registration</h2>
-         <?php if ($success): ?>
-            <div class="alert alert-success text-center"> <?php echo $success; ?> </div>
+        <?php if ($success): ?>
+            <div class="alert alert-success text-center"><?php echo $success; ?></div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelector('form').reset();
+                });
+            </script>
         <?php elseif ($error): ?>
-            <div class="alert alert-danger text-center"> <?php echo $error; ?> </div>
+            <div class="alert alert-danger text-center"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" action="" enctype="multipart/form-data" autocomplete="off">
             
             <h4>Personal Information</h4>
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="middle_name" class="form-control" placeholder="Middle Name">
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
                 </div>
 
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="lrn" class="form-control" placeholder="LRN (12 digits)" required>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="date" name="date_of_birth" class="form-control" required>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <select name="gender" class="form-control" required>
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
@@ -195,68 +217,67 @@ if (isset($_GET['grade_level'])) {
                     </select>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="citizenship" class="form-control" placeholder="Citizenship" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="address" class="form-control" placeholder="Address" required>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="contact_number" class="form-control" placeholder="Contact Number" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-3">
-    <select name="grade_level" id="grade_level" class="form-control" required>
-        <option value="">Select Grade Level</option>
-        <option value="Grade 7">Grade 7</option>
-        <option value="Grade 8">Grade 8</option>
-        <option value="Grade 9">Grade 9</option>
-        <option value="Grade 10">Grade 10</option>
-        <option value="Grade 11">Grade 11</option>
-        <option value="Grade 12">Grade 12</option>
-    </select>
-</div>
+                <div class="col-12 col-md-4 mb-3">
+                    <select name="grade_level" id="grade_level" class="form-control" required>
+                        <option value="">Select Grade Level</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
+                    </select>
+                </div>
 
-<div class="col-md-4 mb-3">
-    <select name="section" id="section" class="form-control" required>
-        <option value="">Select Section</option>
-    </select>
-</div>
+                <div class="col-12 col-md-4 mb-3">
+                    <select name="section" id="section" class="form-control" required>
+                        <option value="">Select Section</option>
+                    </select>
+                </div>
 
-
-                <div class="col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="school_year" id="school_year" class="form-control" placeholder="School Year" required oninput="updateSchoolYear()">
                 </div>
             </div>
 
             <h4>Parent/Guardian Information</h4>
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="guardian_name" class="form-control" placeholder="Full Name" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="guardian_contact" class="form-control" placeholder="Contact Number" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="guardian_address" class="form-control" placeholder="Guardian Address" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="guardian_relationship" class="form-control" placeholder="Relationship to Student" required>
                 </div>
             </div>
 
             <h4>Academic Information</h4>
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="elementary_school" class="form-control" placeholder="Elementary School" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <input type="text" name="year_graduated" class="form-control" placeholder="Year Graduated" required>
                 </div>
             </div>
@@ -309,38 +330,42 @@ if (isset($_GET['grade_level'])) {
                 document.querySelector('[name="grade_level"]').addEventListener('change', autoUpdateSchoolYear);
                 document.getElementById('school_year').addEventListener('input', autoUpdateSchoolYear);
                 });
+
+            document.getElementById('grade_level').addEventListener('change', function () {
+                const grade = this.value;
+                const sectionDropdown = document.getElementById('section');
+
+                sectionDropdown.innerHTML = '<option value="">Loading...</option>';
+
+                fetch('register.php?grade_level=' + encodeURIComponent(grade))
+                    .then(response => response.json())
+                    .then(data => {
+                        sectionDropdown.innerHTML = '<option value="">Select Section</option>';
+                        if (data.length > 0) {
+                            data.forEach(section => {
+                                const opt = document.createElement('option');
+                                opt.value = section.section_name;
+                                opt.textContent = section.section_name;
+                                sectionDropdown.appendChild(opt);
+                            });
+                        } else {
+                            sectionDropdown.innerHTML = '<option value="">No sections available</option>';
+                        }
+                    })
+                    .catch(error => {
+                        sectionDropdown.innerHTML = '<option value="">Error loading sections</option>';
+                        console.error('Error:', error);
+                    });
+            });
+
+            if (performance.navigation.type === 2) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form');
+                form.reset();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
         </script>
-
-        <script>
-document.getElementById('grade_level').addEventListener('change', function () {
-    const grade = this.value;
-    const sectionDropdown = document.getElementById('section');
-
-    sectionDropdown.innerHTML = '<option value="">Loading...</option>';
-
-    fetch('register.php?grade_level=' + encodeURIComponent(grade))
-        .then(response => response.json())
-        .then(data => {
-            sectionDropdown.innerHTML = '<option value="">Select Section</option>';
-            if (data.length > 0) {
-                data.forEach(section => {
-                    const opt = document.createElement('option');
-                    opt.value = section.section_name;
-                    opt.textContent = section.section_name;
-                    sectionDropdown.appendChild(opt);
-                });
-            } else {
-                sectionDropdown.innerHTML = '<option value="">No sections available</option>';
-            }
-        })
-        .catch(error => {
-            sectionDropdown.innerHTML = '<option value="">Error loading sections</option>';
-            console.error('Error:', error);
-        });
-});
-</script>
-
-
     </div>
 </body>
 </html>

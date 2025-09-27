@@ -1,35 +1,123 @@
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-content .close {
+  align-self: flex-end;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.id-toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 520px;
+}
+
 .id-wrapper {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    align-items: center;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#frontID,
+#backID {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .id-container {
-    width: 300px;
-    height: 500px;
-    position: relative;
-    text-align: center;
-    font-family: Arial, sans-serif;
+  width: 300px;
+  height: 500px;
+  position: relative;
+  text-align: center;
+  font-family: Arial, sans-serif;
 }
 
-/* Use <img> for backgrounds to ensure printing */
 .background-img {
-    width: 85%;
-    height: 84%;
+    width: 89%;
+    height: 85%;
     position: absolute;
     top: 0;
     left: 0;
     z-index: -1;
 }
 
+.toggle-btn {
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  background: none;
+  border: none;
+}
+
+.print-area {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-btn, .toggle-btn {
+  position: absolute;
+  z-index: 9999;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.print-btn {
+  display: block;
+  right: 0;
+  margin-right: 40px;
+  top: calc(85% + 10px);
+  padding: 6px 14px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+}
+
+.print-btn:hover {
+  background-color: #0056b3;
+}
+
 /* Front ID */
 .id-photo {
-    width: 125px;
-    height: 125px;
+    width: 134px;
+    height: 124px;
     position: absolute;
-    top: 70px;
-    left: 43%;
+    top: 71.5px;
+    left: 45%;
     transform: translateX(-50%);
     object-fit: cover;
     border: none; /* Removed black border */
@@ -37,10 +125,10 @@
 
 .student-name-container {
     position: absolute;
-    top: 223px;
-    left: 42.5%;
+    top: 227px;
+    left: 43%;
     transform: translateX(-50%);
-    width: 220px; /* Wider to better accommodate longer names */
+    width: 180px; /* Wider to better accommodate longer names */
     height: 30px;  /* Fixed height */
     display: flex;
     align-items: center;
@@ -54,14 +142,14 @@
     color: rgb(4, 76, 154);
     font-weight: bold;
     font-family: 'Arial Unicode MS', sans-serif;
-    font-size: 22px; /* Start at max */
+    font-size: 16px; /* Start at max */
     line-height: 1;
     white-space: nowrap; /* Stay on one line */
 }
 
 .student-lrn-container {
     position: absolute;
-    top: 278px;
+    top: 282px;
     left: 43%;
     transform: translateX(-50%);
     width: 220px;  /* Fixed width */
@@ -75,16 +163,34 @@
 }
 
 .student-lrn {
-    font-size: 18px;
+    font-size: 16px;
     font-family: 'Roboto', sans-serif;
     color: black;
     font-weight: bold;
     white-space: nowrap;
 }
 
-.principal-container {
+.principal-signature-container {
+  position: absolute;
+  top: 330px;
+  left: 38%;
+  transform: translateX(-50%);
+  width: 100px;
+  text-align: center;
+}
+
+.principal-signature {
+  width: 130px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+.principal-name-container {
     position: absolute;
-    top: 352px;
+    top: 356px;
     left: 43%;
     transform: translateX(-50%);
     width: 220px;  /* Fixed width */
@@ -92,14 +198,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #000;  /* Optional border */
     box-sizing: border-box;
     overflow: hidden;
     text-align: center;
 }
 
 .principal {
-    font-size: 20px;
+    font-size: 16px;
     font-family: 'Roboto', sans-serif;
     color: black;
     font-weight: bold;
@@ -109,8 +214,8 @@
 /* Back ID */
 .school-year-container {
     position: absolute;
-    top: 63px;
-    left: 44%;
+    top: 63.5px;
+    left: 46%;
     transform: translateX(-50%);
     width: 80px; /* Fixed width */
     height: 20px;  /* Fixed height */
@@ -163,7 +268,7 @@
     color: rgba(0, 0, 0, 0.704);
     font-weight: bold;
     font-size: 16px;
-    line-height: 1.2;
+    line-height: 1;
     text-align: center;
     max-width: 100%;
     overflow: hidden;
@@ -188,20 +293,19 @@
     margin-top: 4px;
 }
 
-.print-btn {
-    display: block;
+.student-signature-container {
     position: absolute;
-    right: 0px; /* Align to the right */
-    margin-right: 40px; /* Small spacing from the right edge */
-    top: calc(85% + 10px); /* Position half an inch below the ID */
-    padding: 6px 14px; /* Adjust size */
-    font-size: 14px; /* Reduce font size */
-    background-color: #007bff;
-    border-radius: 4px;
+    top: 354px; /* adjust based on layout */
+    left: 42%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: auto;
     text-align: center;
-    cursor: pointer;
 }
 
-.print-btn:hover {
-    background-color: #0056b3;
+.student-signature {
+    width: 100px;
+    height: auto;
+    opacity: 0.95;
+    display: inline-block;
 }

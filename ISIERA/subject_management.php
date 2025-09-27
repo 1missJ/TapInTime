@@ -71,23 +71,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_subject'])) {
   <title>Subject Management</title>
   <link rel="stylesheet" href="assets/css/style.css" />
   <style>
+    .centered-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
     body {
       background-color: #f0f2f5;
     }
-
+    
     .main-content {
       margin-left: 300px;
       padding: 30px;
     }
 
-    .card {
+  .card {
       background-color: #fff;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.08);
       margin-bottom: 30px;
-      max-width: 600px;
+      width: 600px; /* Changed from max-width to fixed width */
+    }
 
+       .form-card {
+      height: 300px; /* Adjusted to match image proportions */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     h3 {
@@ -144,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_subject'])) {
     }
 
     th, td {
-      padding: 12px 16px;
+      padding: 16px 26px;
       text-align: left;
       border-bottom: 1px solid #eee;
     }
@@ -215,13 +227,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_subject'])) {
       font-weight: bold;
       cursor: pointer;
     }
+
+    .custom-select {
+  width: 25%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  appearance: none;
+  font-size: 14px;
+  margin-bottom: 15px;
+  transition: border-color 0.2s;
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: #2a2185;
+  background-color: #fff;
+}
+
   </style>
 </head>
 <body>
 
 <?php include('sidebar.php'); ?>
-<div class="main-content">
 
+<div class="main-content">
   <div class="dropdown-nav">
     <label>Navigate to:</label>
     <select onchange="navigate(this.value)">
@@ -232,66 +263,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_subject'])) {
     </select>
   </div>
 
-<div class="main-content">
-  <?php if (isset($success)): ?>
-    <div class="alert alert-success"><?= $success ?></div>
-  <?php elseif (isset($error)): ?>
-    <div class="alert alert-danger"><?= $error ?></div>
-  <?php endif; ?>
+  <div class="centered-content">
+    <?php if (isset($success)): ?>
+      <div class="alert alert-success"><?= $success ?></div>
+    <?php elseif (isset($error)): ?>
+      <div class="alert alert-danger"><?= $error ?></div>
+    <?php endif; ?>
 
-<div class="card">
-  <h3>Add Subjects</h3>
-  <form method="POST">
-    <label>Subject Names (separated by comma)</label>
-    <input type="text" name="subject_names" placeholder="e.g. Math, Science, Filipino" required />
+    <!-- Added form-card class to match height with Subject List -->
+    <div class="card form-card">
+      <h3>Add Subjects</h3>
+      <form method="POST">
+        <label>Subject Names (separated by comma)</label>
+        <input type="text" name="subject_names" placeholder="e.g. Math, Science, Filipino" required />
 
-    <label>Student Type</label>
-    <select name="student_type" required>
-      <option value="">-- Select Type --</option>
-      <option value="JHS">JHS</option>
-      <option value="SHS">SHS</option>
-    </select>
+        <label>Student Type</label>
+        <select name="student_type" class="custom-select" onchange="toggleStrand(this.value)" required>
+          <option value="">-- Select Type --</option>
+          <option value="JHS">JHS</option>
+          <option value="SHS">SHS</option>
+        </select>
 
-    <div id="strand_field" style="display:none;">
-  <label>Strand (for SHS only)</label>
-  <select name="strand_id">
-    <option value="">-- Select Strand --</option>
-    <?php foreach ($strands as $str): ?>
-      <option value="<?= $str['id'] ?>"><?= htmlspecialchars($str['name']) ?></option>
-    <?php endforeach; ?>
-  </select>
-</div>
+        <div id="strand_field" style="display:none;">
+          <label>Strand (for SHS only)</label>
+          <select name="strand_id" class="custom-select">
+            <option value="">-- Select Strand --</option>
+            <?php foreach ($strands as $str): ?>
+              <option value="<?= $str['id'] ?>"><?= htmlspecialchars($str['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
 
-    <button type="submit" name="add_subject">Add Subjects</button>
-  </form>
-</div>
+        <button type="submit" name="add_subject">Add Subjects</button>
+      </form>
+    </div>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeEditModal()">&times;</span>
-    <h3>Edit Subject</h3>
-    <form method="POST">
-      <input type="hidden" name="subject_id" id="editSubjectId">
-      <label>New Subject Name</label>
-      <input type="text" name="updated_subject_name" id="editSubjectName" required>
-      <button type="submit" name="update_subject">Update</button>
-    </form>
-  </div>
-</div>
-
-<!-- Subject List Table -->
-<div class="card">
-  <h3>Subject List</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>JHS Subjects</th>
-        <th>SHS Subjects</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
+    <div class="card">
+      <h3>Subject List</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>JHS Subjects</th>
+            <th>SHS Subjects</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
       $jhsSubjects = $conn->query("SELECT * FROM subjects WHERE student_type = 'JHS' ORDER BY created_at DESC");
       $shsSubjects = $conn->query("SELECT * FROM subjects WHERE student_type = 'SHS' ORDER BY created_at DESC");
 

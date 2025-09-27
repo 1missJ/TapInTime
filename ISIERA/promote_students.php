@@ -1,12 +1,32 @@
 <?php
+include 'db_connection.php';
+
 $section = $_GET['section'] ?? '';
 $grade_level = $_GET['grade_level'] ?? '';
-$student_type = $_GET['student_type'] ?? '';
 
-if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'], $_GET['student_type'])) {
+if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'])) {
     $grade_level = $_GET['grade_level'];
     $section = $_GET['section'];
-    $student_type = $_GET['student_type'];
+}
+
+// Fetch sections for all grade levels
+$sections_by_grade = [];
+$grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+
+foreach ($grades as $grade) {
+    $sql = "SELECT section_name FROM sections WHERE grade_level = ? ORDER BY section_name ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $grade);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $sections = [];
+    while ($row = $result->fetch_assoc()) {
+        $sections[] = $row['section_name'];
+    }
+    
+    $sections_by_grade[$grade] = $sections;
+    $stmt->close();
 }
 ?>
 
@@ -16,13 +36,13 @@ if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'], $_GET['stud
     <meta charset="UTF-8" />
     <title>Promote Students</title>
     <link rel="stylesheet" href="assets/css/style.css" />  
-    <link rel="stylesheet" href="assets/css/section.css" />
+    <link rel="stylesheet" href="assets/css/promotion_section.css" />
 </head>
 <body>
 <?php include('sidebar.php'); ?>
 
 <div class="main-content">
-    <h2>Promote Students<?></h2>
+    <h2>Promote Students</h2>
 
     <div class="search-container">
         <form id="searchForm" onsubmit="return handleSearch(event)">
@@ -34,7 +54,6 @@ if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'], $_GET['stud
 <form method="post" action="process_promotion.php">
     <input type="hidden" name="current_section" value="<?= htmlspecialchars($section) ?>" />
     <input type="hidden" name="current_grade" value="<?= htmlspecialchars($grade_level) ?>" />
-    <input type="hidden" name="student_type" value="<?= htmlspecialchars($student_type) ?>" />
 
     <table class="student-table" id="studentTable">
         <thead>
@@ -54,14 +73,12 @@ if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'], $_GET['stud
         </thead>
         <tbody>
             <?php
-            include 'db_connection.php';
-
             $sql = "SELECT lrn, last_name, first_name, middle_name 
                     FROM students 
-                    WHERE section = ? AND grade_level = ? AND student_type = ?
+                    WHERE section = ? AND grade_level = ?
                     ORDER BY last_name ASC";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sss", $section, $grade_level, $student_type);
+            $stmt->bind_param("ss", $section, $grade_level);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -82,28 +99,118 @@ if (isset($_GET['promoted'], $_GET['grade_level'], $_GET['section'], $_GET['stud
             $conn->close();
             ?>
         </tbody>
+                    <tfoot>
+                <tr>
+                    <td colspan="4">
+                        <div class="promote-btn-container">
+        <button type="button" class="promote-btn" onclick="openSectionModal('<?= $grade_level ?>')">Promote</button>
+    </div>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
     </table>
-
-<div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-    <button type="button" class="promote-btn" onclick="openSectionModal()">Promote</button>
-</div
-
 </form>
 
-<!-- Modal -->
+<!-- Updated Modal with dropdown -->
 <div class="section-modal" id="sectionModal">
     <div class="section-modal-content">
         <span class="section-close" onclick="closeSectionModal()">&times;</span>
-        <h3>Enter New Section</h3>
+        <h3>Select New Section</h3>
         <form id="sectionForm" onsubmit="handleSectionSubmit(event)">
-            <input type="text" id="sectionInput" name="new_section" required />
-            <button type="submit" id="sectionForm button">Confirm</button>
+            <select id="sectionSelect" name="new_section" required>
+                <option value="">-- Select Section --</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <input type="hidden" id="currentGrade" value="" />
+            <button type="submit">Confirm</button>
         </form>
     </div>
 </div>
 
 <!-- Scripts -->
 <script>
+// Get sections data from PHP
+const sectionsByGrade = <?php echo json_encode($sections_by_grade); ?>;
+
+function getNextGradeLevel(currentGrade) {
+    const gradeOrder = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+    const currentIndex = gradeOrder.indexOf(currentGrade);
+    return gradeOrder[currentIndex + 1] || currentGrade;
+}
+
+function openSectionModal(currentGrade) {
+    const checked = document.querySelectorAll("input[name='selected_students[]']:checked");
+    if (checked.length === 0) {
+        alert("Please select at least one student.");
+        return;
+    }
+    
+    // Set current grade in hidden field
+    document.getElementById('currentGrade').value = currentGrade;
+    
+    // Clear and populate section dropdown
+    const sectionSelect = document.getElementById('sectionSelect');
+    sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+    
+    const nextGrade = getNextGradeLevel(currentGrade);
+    const sections = sectionsByGrade[nextGrade];
+    
+    if (sections && sections.length > 0) {
+        sections.forEach(section => {
+            const option = document.createElement('option');
+            option.value = section;
+            option.textContent = section;
+            sectionSelect.appendChild(option);
+        });
+    } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No sections available for ' + nextGrade;
+        option.disabled = true;
+        sectionSelect.appendChild(option);
+    }
+    
+    document.getElementById("sectionModal").classList.add("show");
+}
+
+function closeSectionModal() {
+    document.getElementById("sectionModal").classList.remove("show");
+}
+
+function handleSectionSubmit(event) {
+    event.preventDefault();
+    const section = document.getElementById("sectionSelect").value.trim();
+    if (!section) {
+        alert("Please select a section.");
+        return;
+    }
+    
+    const currentGrade = document.getElementById("currentGrade").value;
+    const nextGrade = getNextGradeLevel(currentGrade);
+    
+    if (!confirm(`Promote selected students to ${nextGrade} and assign them to section ${section}?`)) {
+        return;
+    }
+    
+    const form = document.querySelector("form[action='process_promotion.php']");
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "new_section";
+    input.value = section;
+    form.appendChild(input);
+    
+    // Add next grade level to form
+    const gradeInput = document.createElement("input");
+    gradeInput.type = "hidden";
+    gradeInput.name = "next_grade";
+    gradeInput.value = nextGrade;
+    form.appendChild(gradeInput);
+    
+    form.submit();
+}
+
+// Search and dropdown toggle functions remain the same
 function searchStudent() {
     const input = document.getElementById("searchInput").value.toUpperCase();
     const rows = document.querySelectorAll("#studentTable tbody tr");
@@ -119,7 +226,6 @@ function searchStudent() {
         if (match) hasMatch = true;
     });
 
-    // Optional: Display a message if no matches found
     const existingNoData = document.getElementById("noDataRow");
     if (existingNoData) existingNoData.remove();
 
@@ -132,44 +238,10 @@ function searchStudent() {
     }
 }
 
-// Auto-run search on typing
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("searchInput").addEventListener("input", searchStudent);
-});
-
-function openSectionModal() {
-    const checked = document.querySelectorAll("input[name='selected_students[]']:checked");
-    if (checked.length === 0) {
-        alert("Please select at least one student.");
-        return;
-    }
-    document.getElementById("sectionModal").classList.add("show");
-}
-
-function closeSectionModal() {
-    document.getElementById("sectionModal").classList.remove("show");
-}
-
-    function handleSectionSubmit(event) {
-        event.preventDefault();
-        const section = document.getElementById("sectionInput").value.trim();
-        if (!section) {
-            alert("Please enter a new section.");
-            return;
-        }
-        if (!confirm("Promote selected students to the next grade level and assign them to section " + section + "?")) {
-            return;
-        }
-        const form = document.querySelector("form[action='process_promotion.php']");
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "new_section";
-        input.value = section;
-        form.appendChild(input);
-        form.submit();
-    }
-
-    // Dropdown
+    
+    // Dropdown toggle
     const promoteToggle = document.getElementById('promoteHeaderDropdownToggle');
     const promoteDropdown = document.getElementById('promoteHeaderDropdownMenu');
     const selectAllOption = document.getElementById('selectAllOption');
@@ -191,6 +263,7 @@ function closeSectionModal() {
         selectAllOption.textContent = allSelected ? 'Deselect All' : 'Select All';
         promoteDropdown.style.display = 'none';
     });
+});
 </script>
 
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>

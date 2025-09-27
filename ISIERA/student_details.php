@@ -27,10 +27,21 @@ if (mysqli_num_rows($result) > 0) {
 <?php include('sidebar.php'); ?>
 
 <div class="main-content">
-    <h2>Student Information</h2>
-
+    <div class="dropdown-nav">
+        <label for="gradeSelect">Navigate to:</label>
+        <select id="gradeSelect" onchange="showStudents(this.value)">
+            <option value="">-- Select Grade Level --</option>
+            <?php
+            $grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+            foreach ($grades as $grade) {
+                echo "<option value='$grade'>$grade</option>";
+            }
+            ?>
+        </select>
+    </div>
+    
     <!-- Search Bar -->
-    <div class="search-container" style="display:none;">
+    <div class="search-container" style="display:none;" id="searchContainer">
         <div class="left-search">
             <form id="searchForm" onsubmit="return handleSearch(event)">
                 <input type="text" id="searchInput" placeholder="Search by Section...">
@@ -38,19 +49,6 @@ if (mysqli_num_rows($result) > 0) {
             </form>
         </div>
     </div>    
-
-    <!-- Grade Level Boxes Only -->
-    <div class="year-levels">
-        <?php
-        $grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
-
-        foreach ($grades as $grade) {
-            echo "<div class='year-box-wrapper'>
-                    <div class='year-box' onclick=\"showStudents('{$grade}')\">{$grade}</div>
-                  </div>";
-        }
-        ?>
-    </div>
 
     <!-- Student Table -->
     <table class="student-table" id="studentTable" style="display:none;">
@@ -142,13 +140,22 @@ function searchStudent() {
 }
 
 function showStudents(yearLevel) {
+    const searchContainer = document.getElementById("searchContainer");
+    const studentTable = document.getElementById("studentTable");
+    
+    if (!yearLevel) {
+        // If no grade level is selected (default option), hide both search and table
+        searchContainer.style.display = "none";
+        studentTable.style.display = "none";
+        return;
+    }
+    
     currentGrade = yearLevel.trim().toLowerCase();
 
-    document.querySelector(".year-levels").style.display = "none";
-    document.querySelector(".search-container").style.display = "flex";
-
+    // Show search bar and student table
+    searchContainer.style.display = "flex";
     document.getElementById("searchInput").value = "";
-    document.getElementById("studentTable").style.display = "table";
+    studentTable.style.display = "table";
 
     searchStudent();
 }

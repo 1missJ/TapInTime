@@ -74,6 +74,15 @@ try {
         throw new Exception("Failed to insert into archive: " . mysqli_error($conn));
     }
 
+// ... (previous code remains the same until the delete part)
+
+    // First delete attendance records for this student
+    $deleteAttendanceSql = "DELETE FROM attendance WHERE student_id = (SELECT id FROM students WHERE lrn = '$lrn')";
+    if (!mysqli_query($conn, $deleteAttendanceSql)) {
+        throw new Exception("Failed to delete attendance records: " . mysqli_error($conn));
+    }
+
+    // Now delete the student
     $deleteSql = "DELETE FROM students WHERE lrn = '$lrn'";
     if (!mysqli_query($conn, $deleteSql)) {
         throw new Exception("Failed to delete student: " . mysqli_error($conn));

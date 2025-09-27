@@ -1,27 +1,41 @@
 <?php
+// archived_students.php
 include('db_connection.php');
 
-// Get filters from GET parameters
+// Get parameters from URL
 $section = isset($_GET['section']) ? $_GET['section'] : '';
-$grade_level = isset($_GET['grade_level']) ? $_GET['grade_level'] : '';
+$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
 
-// Escape values
+// Escape values for security
 $sectionEscaped = mysqli_real_escape_string($conn, $section);
-$gradeLevelEscaped = mysqli_real_escape_string($conn, $grade_level);
+$filterEscaped = mysqli_real_escape_string($conn, $filter);
 
-// Fetch students from archive WITHOUT student_type filtering
-$query = "
-    SELECT 
-        lrn,
-        CONCAT(UPPER(LEFT(last_name,1)), LOWER(SUBSTRING(last_name,2)), ', ',
-               UPPER(LEFT(first_name,1)), LOWER(SUBSTRING(first_name,2)), ' ',
-               UPPER(LEFT(middle_name,1)), '.') AS fullname,
-        email
-    FROM archived_students
-    WHERE section = '$sectionEscaped'
-      AND grade_level = '$gradeLevelEscaped'
-    ORDER BY last_name, first_name, middle_name
-";
+// Build the query based on filter type
+if ($filter === 'JHS Graduate' || $filter === 'SHS Graduate') {
+    $query = "SELECT 
+                lrn,
+                CONCAT(UPPER(LEFT(last_name,1)), LOWER(SUBSTRING(last_name,2)), ', ',
+                       UPPER(LEFT(first_name,1)), LOWER(SUBSTRING(first_name,2)), ' ',
+                       UPPER(LEFT(middle_name,1)), '.') AS fullname,
+                email,
+                grade_level
+              FROM archived_students
+              WHERE section = '$sectionEscaped'
+                AND archive_type = '$filterEscaped'
+              ORDER BY last_name, first_name, middle_name";
+} else {
+    $query = "SELECT 
+                lrn,
+                CONCAT(UPPER(LEFT(last_name,1)), LOWER(SUBSTRING(last_name,2)), ', ',
+                       UPPER(LEFT(first_name,1)), LOWER(SUBSTRING(first_name,2)), ' ',
+                       UPPER(LEFT(middle_name,1)), '.') AS fullname,
+                email,
+                grade_level
+              FROM archived_students
+              WHERE section = '$sectionEscaped'
+                AND grade_level = '$filterEscaped'
+              ORDER BY last_name, first_name, middle_name";
+}
 
 $result = mysqli_query($conn, $query);
 $students = mysqli_num_rows($result) > 0 ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
@@ -31,14 +45,15 @@ $students = mysqli_num_rows($result) > 0 ? mysqli_fetch_all($result, MYSQLI_ASSO
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Archived Students</title>
+    <title>Archived Students - <?= htmlspecialchars($section) ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include('sidebar.php'); ?>
 
 <div class="main-content">
-    <h2>Archived Students</h2>
+    
+    <h2>List of Archived Students</h2>
 
     <div class="search-container">
         <form id="searchForm" onsubmit="return false;">
@@ -47,7 +62,10 @@ $students = mysqli_num_rows($result) > 0 ? mysqli_fetch_all($result, MYSQLI_ASSO
         </form>
     </div>
 
-    <form method="POST" action="unarchive_student_action.php">
+    <form method="POST" action="unarchive_student_action.php" id="unarchiveForm">
+    <input type="hidden" name="section" value="<?= htmlspecialchars($section) ?>">
+    <input type="hidden" name="filter" value="<?= htmlspecialchars($filter) ?>">
+        
         <table class="student-table" id="studentTable">
             <thead>
                 <tr>
@@ -81,11 +99,17 @@ $students = mysqli_num_rows($result) > 0 ? mysqli_fetch_all($result, MYSQLI_ASSO
                     <tr id="noDataRow"><td colspan="4">No data available.</td></tr>
                 <?php endif; ?>
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">
+                        <div class="unarchive-btn-container">
+                            <span class="error-message" id="selectionError">Please select at least one student to unarchive.</span>
+                            <button type="button" class="unarchive-btn" id="unarchiveBtn">Unarchive</button>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
         </table>
-
-        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-            <button type="submit" class="promote-btn">Unarchive</button>
-        </div>
     </form>
 </div>
 
@@ -99,6 +123,8 @@ function searchStudent() {
     document.getElementById("noDataRow")?.remove();
 
     rows.forEach(row => {
+        if (row.id === "noDataRow") return;
+        
         const lrn = row.cells[0].textContent.toUpperCase();
         const name = row.cells[1].textContent.toUpperCase();
         const match = lrn.includes(input) || name.includes(input);
@@ -137,10 +163,32 @@ selectAllCheckboxes.addEventListener('click', () => {
     selectAllCheckboxes.textContent = allChecked ? 'Deselect All' : 'Select All';
     archiveDropdown.style.display = 'none';
 });
+
+// Function to check if at least one checkbox is selected
+function isAtLeastOneSelected() {
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    for (let i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Handle unarchive button click
+document.getElementById('unarchiveBtn').addEventListener('click', function() {
+    if (!isAtLeastOneSelected()) {
+        // Show error message if no students are selected
+        document.getElementById('selectionError').style.display = 'inline';
+    } else {
+        // Hide error message and submit the form
+        document.getElementById('selectionError').style.display = 'none';
+        document.getElementById('unarchiveForm').submit();
+    }
+});
 </script>
 
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
 </body>
 </html>

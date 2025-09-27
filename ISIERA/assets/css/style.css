@@ -164,7 +164,6 @@ body {
     white-space: nowrap;
 }
 
-/*Student Verification design*/
 /* Main Content Styling */
 .main-content {
     margin-left: 300px; /* Gawing same width ng sidebar */
@@ -182,7 +181,7 @@ body {
         font-family: 'Arial', sans-serif;
         font-weight: 600;
         color: #333;
-        font-size: 30px;
+        font-size: 25px;
     }
 
 /* Search Bar */
@@ -259,7 +258,7 @@ body {
 }
 
 .student-table th, .student-table td {
-    padding: 12px;
+    padding: 8px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
@@ -294,7 +293,7 @@ body {
     transition: 0.3s;
 }
 
-/* Verification Button */
+/* Student Verification Button */
 .approve-btn {
     background-color: #28a745;
     color: white;
@@ -343,129 +342,7 @@ input.form-control:focus {
     box-shadow: none;
 }
 
-
-/*Student details modal in verification */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 1;
-    top: 0;
-    width: 150%;
-    height: 150%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    text-align: center;
-}
-
-.btn-close {
-    color: red;
-    float: right;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-/* Form Sections */
-.form-section h4 {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #555;
-}
-
-/* Form Fields */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    font-weight: bold; 
-    text-align: left; 
-    font-size: 16px;
-    color: #444;
-}
-
-/* Form Inputs */
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.form-group input[type="file"] {
-    width: auto;
-    padding: 5px;
-}
-
-/* Three-column layout for form fields */
-.row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.col-md-4 {
-    flex: 1;
-    min-width: 250px; /* Adjust the min-width as needed */
-}
-
-/* Student Profile */
-.id-photo-box {
-    display: flex;
-    padding: 5px;
-}
-
-.id-photo-img {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.rectangle-img {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    width: 50%; /* Ensures equal width */
-    height: 250px; /* Ensures equal height */
-    justify-content: center;
-}
-
-.document-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    padding: 20px;
-    border: 2px solid #ddd; /* Optional border */
-    width: 100%; /* Ensures equal width */
-    height: 250px; /* Ensures equal height */
-    justify-content: center;
-}
-
-.document-box label {
-    position: absolute;
-    top: -20px; /* Adjust this to position the label above the image */
-    left: 0;
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-    background-color: rgba(255, 255, 255, 0.7); /* Optional: Background for better visibility */
-    padding: 5px 10px; /* Padding for the label */
-}
-
-/* Details Button*/
+/* Student Details Button*/
 .form-buttons {
 display: flex;
 justify-content: flex-end;  /* Align buttons to the right */
@@ -481,42 +358,34 @@ margin-top: 30px; /* Add some spacing from other elements */
   background-color: #dc3545 !important;
   color: white !important;
 }
-.unarchive {
-  background-color: #28a745 !important;
-  color: white !important;
-}
+        .unarchive-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        .unarchive-btn {
+            padding: 10px 20px;
+            background-color: rgb(5, 207, 11);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .unarchive-btn:hover {
+            background-color: #10cf06;
+        }
+        
+        .error-message {
+            color: #ff0000;
+            margin-right: 15px;
+            display: none;
+        }
 .view {
   background-color: #3535dc !important;
   color: white !important;
-}
-
-.save-btn, .close-btn {
-padding: 8px 20px;
-font-size: 12px;
-border-radius: 3px;
-cursor: pointer;
-border: none;
-transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.save-btn {
-background-color: #4CAF50; /* Green for Save */
-color: white;
-}
-
-.save-btn:hover {
-background-color: #45a049;
-transform: scale(1.05);
-}
-
-.close-btn {
-background-color: #f44336; /* Red for Close */
-color: white;
-}
-
-.close-btn:hover {
-background-color: #e53935;
-transform: scale(1.05);
 }
 
 /* ID Generation Button */
@@ -536,37 +405,7 @@ transform: scale(1.05);
     background-color: #138496;
 }
 
-/* Styling for Year Level Selection */
-.year-levels {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.year-levels h3 {
-    width: 100%;
-}
-
-.year-levels .year-box {
-    background: #3498DB;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    flex: 1;
-    min-width: 120px;
-}
-
-.year-levels .year-box:hover {
-    background: #2980B9;
-}
-
-/* Student Promotion */
+/* Archive Style: three dot */
 .year-box-wrapper {
     position: relative;
     flex: 1;
@@ -641,21 +480,25 @@ transform: scale(1.05);
 background-color: #f0f0f0;
 }
 
-.promote-btn {
-    position: fixed;
-    right: 20px;
-    padding: 8px 16px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.promote-btn:hover {
-    background-color: #0056b3;
-}
+        .promote-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        .promote-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .promote-btn:hover {
+            background-color: #0056b3;
+        }
 
 .btn-promote {
     padding: 8px 16px;
@@ -670,4 +513,18 @@ background-color: #f0f0f0;
 
 .btn-promotes:hover {
     background-color: #0056b3;
+}
+
+/* Year- level Dropdown navigation */
+.dropdown-nav {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+.dropdown-nav select {
+      padding: 8px 12px;
+      border-radius: 6px;
 }

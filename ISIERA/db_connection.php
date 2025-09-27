@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root"; // Change if using a different database user
 $password = ""; // Change if your MySQL user has a password
-$dbname = "TapInTime"; // Your database name
+$dbname = "TapInTime1"; // Your database name
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
